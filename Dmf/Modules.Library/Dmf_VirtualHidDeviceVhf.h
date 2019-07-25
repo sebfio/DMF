@@ -19,16 +19,11 @@ Environment:
 
 #pragma once
 
-// This Module is only supported in Kernel-mode because VHF only support Kernel-mode.
-//
-#if !defined(DMF_USER_MODE) && defined(NTDDI_WINTHRESHOLD) && (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
-
-#pragma warning(disable:4201)  // suppress nameless struct/union warning
-#pragma warning(disable:4214)  // suppress bit field types other than int warning
-#include <vhf.h>
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Definitions used by various HID descriptors.
+//
+// NOTE: These definitions are usable by any Clients that need them, not just Clients of this 
+//       Module.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
@@ -1044,6 +1039,14 @@ Environment:
 #define HID_FEATURE_8(a)                        0xB1U,(a)
 #define HID_FEATURE_16(a,b)                     0xB2U,(a),(b)
 #define HID_FEATURE_32(a,b,c,d)                 0xB3U,(a),(b),(c),(d)
+
+// This Module is only supported in Kernel-mode because VHF only support Kernel-mode.
+//
+#if !defined(DMF_USER_MODE) && defined(NTDDI_WINTHRESHOLD) && (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)
+
+#pragma warning(disable:4201)  // suppress nameless struct/union warning
+#pragma warning(disable:4214)  // suppress bit field types other than int warning
+#include <vhf.h>
 
 // Client uses this structure to configure the Module specific parameters.
 //
