@@ -169,6 +169,10 @@ typedef struct
     PWSTR* Strings;
     ULONG NumberOfStrings;
 
+    // Indicates how often Module should check for Input Reports.
+    //
+    LONG InputReportPollingIntervalMilliseconds;
+
     // Client callback handlers.
     //
     EVT_VirtualHidDeviceMini_WriteReport* WriteReport;

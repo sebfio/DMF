@@ -382,7 +382,6 @@ Exit:
     return ntStatus;
 }
 
-
 NTSTATUS
 VirtualHidDeviceMiniSample_SetFeature(
     _In_ DMFMODULE DmfModule,
@@ -694,6 +693,7 @@ Return Value:
     DMF_CONFIG_VirtualHidDeviceMiniSample* moduleConfig;
     DMF_CONTEXT_VirtualHidDeviceMiniSample* moduleContext;
     DMF_CONFIG_VirtualHidDeviceMini virtualHidDeviceMiniModuleConfig;
+    const ULONG timerPeriodInSeconds = 5;
 
     PAGED_CODE();
 
@@ -749,10 +749,12 @@ Return Value:
     virtualHidDeviceMiniModuleConfig.Strings = g_VirtualHidDeviceMiniSample_Strings;
     virtualHidDeviceMiniModuleConfig.NumberOfStrings = ARRAYSIZE(g_VirtualHidDeviceMiniSample_Strings);
 
+    virtualHidDeviceMiniModuleConfig.InputReportPollingIntervalMilliseconds = timerPeriodInSeconds * 1000;
+
     DMF_DmfModuleAdd(DmfModuleInit,
-                        &moduleAttributes,
-                        WDF_NO_OBJECT_ATTRIBUTES,
-                        &moduleContext->DmfModuleVirtualHidDeviceMini);
+                     &moduleAttributes,
+                     WDF_NO_OBJECT_ATTRIBUTES,
+                     &moduleContext->DmfModuleVirtualHidDeviceMini);
 
     FuncExitVoid(DMF_TRACE);
 }
