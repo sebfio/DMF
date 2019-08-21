@@ -5,7 +5,7 @@
 
 Module Name:
 
-    Dmf_VirtualHidMIni.c
+    Dmf_VirtualHidMini.c
 
 Abstract:
 
@@ -25,7 +25,7 @@ Environment:
 #include "DmfModules.Library.h"
 #include "DmfModules.Library.Trace.h"
 
-#include "Dmf_VirtualHidMIni.tmh"
+#include "Dmf_VirtualHidMini.tmh"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // Module Private Enumerations and Structures
@@ -41,19 +41,20 @@ typedef struct
 {
     // This Module automatically queues Read requests. They are periodically 
     // dequeued. Then, data to copy into the requests is retrieved from the Client.
+    // Client specifies polling interval.
     //
     WDFQUEUE ManualQueue;
-} DMF_CONTEXT_VirtualHidMIni;
+} DMF_CONTEXT_VirtualHidMini;
 
 // This macro declares the following function:
 // DMF_CONTEXT_GET()
 //
-DMF_MODULE_DECLARE_CONTEXT(VirtualHidMIni)
+DMF_MODULE_DECLARE_CONTEXT(VirtualHidMini)
 
 // This macro declares the following function:
 // DMF_CONFIG_GET()
 //
-DMF_MODULE_DECLARE_CONFIG(VirtualHidMIni)
+DMF_MODULE_DECLARE_CONFIG(VirtualHidMini)
 
 // MemoryTag.
 //
@@ -305,7 +306,7 @@ Exit:
 #endif
 
 NTSTATUS
-RequestCopyFromBuffer(
+VirtualHidMini_RequestCopyFromBuffer(
     _In_  WDFREQUEST Request,
     _In_  VOID* SourceBuffer,
     _When_(NumberOfBytesToCopyFrom == 0, __drv_reportError(NumberOfBytesToCopyFrom cannot be zero))
@@ -315,14 +316,12 @@ RequestCopyFromBuffer(
 
 Routine Description:
 
-    A helper function to copy specified bytes to the request's output memory
+    A helper function to copy specified bytes to the request's output memory.
 
 Arguments:
 
     Request - A handle to a framework request object.
-
     SourceBuffer - The buffer to copy data from.
-
     NumBytesToCopyFrom - The length, in bytes, of data to be copied.
 
 Return Value:
@@ -374,10 +373,10 @@ Exit:
     return ntStatus;
 }
 
-EVT_WDF_TIMER VirtualHidMIni_EvtTimerHandler;
+EVT_WDF_TIMER VirtualHidMini_EvtTimerHandler;
 
 void
-VirtualHidMIni_EvtTimerHandler(
+VirtualHidMini_EvtTimerHandler(
     _In_ WDFTIMER Timer
     )
 /*++
@@ -392,15 +391,15 @@ Arguments:
 
 Return Value:
 
-    VOID
+    None
 
 --*/
 {
     NTSTATUS ntStatus;
     WDFREQUEST request;
     DMFMODULE dmfModule;
-    DMF_CONTEXT_VirtualHidMIni* moduleContext;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONTEXT_VirtualHidMini* moduleContext;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
     UCHAR* readReport;
     ULONG readReportSize;
 
@@ -419,9 +418,9 @@ Return Value:
                                                          &readReportSize);
         if (NT_SUCCESS(ntStatus))
         {
-            ntStatus = RequestCopyFromBuffer(request,
-                                             readReport,
-                                             readReportSize);
+            ntStatus = VirtualHidMini_RequestCopyFromBuffer(request,
+                                                            readReport,
+                                                            readReportSize);
         }
 
         WdfRequestComplete(request,
@@ -430,7 +429,7 @@ Return Value:
 }
 
 NTSTATUS
-VirtualHidMIni_ManualQueueCreate(
+VirtualHidMini_ManualQueueCreate(
     _In_ DMFMODULE DmfModule,
     _Out_ WDFQUEUE* Queue
     )
@@ -465,7 +464,6 @@ Routine Description:
 Arguments:
 
     Device - Handle to a framework device object.
-
     Queue - Output pointer to a framework I/O queue handle, on success.
 
 Return Value:
@@ -482,7 +480,7 @@ Return Value:
     WDF_TIMER_CONFIG timerConfig;
     WDF_OBJECT_ATTRIBUTES timerAttributes;
     WDFDEVICE device;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
 
     device = DMF_ParentDeviceGet(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
@@ -508,7 +506,7 @@ Return Value:
     queueContext->DmfModule = DmfModule;
 
     WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig,
-                                   VirtualHidMIni_EvtTimerHandler,
+                                   VirtualHidMini_EvtTimerHandler,
                                    moduleConfig->InputReportPollingIntervalMilliseconds);
 
     WDF_OBJECT_ATTRIBUTES_INIT(&timerAttributes);
@@ -535,7 +533,7 @@ Exit:
 }
 
 NTSTATUS
-VirtualHidMInit_ReadReport(
+VirtualHidMinit_ReadReport(
     _In_ DMFMODULE DmfModule,
     _In_  WDFREQUEST Request,
     _Always_(_Out_) BOOLEAN* CompleteRequest
@@ -554,20 +552,18 @@ Routine Description:
 Arguments:
 
     QueueContext - The object context associated with the queue
-
     Request - Pointer to  Request Packet.
-
     CompleteRequest - A boolean output value, indicating whether the caller
-            should complete the request or not
+                      should complete the request or not
 
 Return Value:
 
-    NT status code.
+    NTSTATUS
 
 --*/
 {
     NTSTATUS ntStatus;
-    DMF_CONTEXT_VirtualHidMIni* moduleContext;
+    DMF_CONTEXT_VirtualHidMini* moduleContext;
 
     moduleContext = DMF_CONTEXT_GET(DmfModule);
 
@@ -589,7 +585,7 @@ Return Value:
 }
 
 NTSTATUS
-VirtualHidMIni_WriteReport(
+VirtualHidMini_WriteReport(
     _In_ DMFMODULE DmfModule,
     _In_ WDFREQUEST Request
     )
@@ -601,21 +597,19 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue
-
+    QueueContext - The object context associated with the queue.
     Request - Pointer to  Request Packet.
 
 Return Value:
 
-    NT ntStatus code.
+    NTSTATUS
 
 --*/
-
 {
     NTSTATUS ntStatus;
     HID_XFER_PACKET packet;
     ULONG reportSize;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
 
     ntStatus = RequestGetHidXferPacket_ToWriteToDevice(Request,
                                                        &packet);
@@ -646,7 +640,7 @@ Return Value:
 }
 
 HRESULT
-VirtualHidMIni_GetFeature(
+VirtualHidMini_GetFeature(
     _In_ DMFMODULE DmfModule,
     _In_ WDFREQUEST Request
     )
@@ -658,21 +652,20 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue
-
+    QueueContext - The object context associated with the queue.
     Request - Pointer to  Request Packet.
 
 Return Value:
 
-    NT ntStatus code.
+    NTSTATUS
 
 --*/
 {
     NTSTATUS ntStatus;
     HID_XFER_PACKET packet;
     ULONG reportSize;
-    DMF_CONTEXT_VirtualHidMIni* moduleContext;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONTEXT_VirtualHidMini* moduleContext;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
 
     moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
@@ -704,7 +697,7 @@ Return Value:
 }
 
 NTSTATUS
-VirtualHidMIni_SetFeature(
+VirtualHidMini_SetFeature(
     _In_ DMFMODULE DmfModule,
     _In_ WDFREQUEST Request
     )
@@ -714,25 +707,24 @@ Routine Description:
 
     Handles IOCTL_HID_SET_FEATURE for all the collection.
     For control collection (custom defined collection) it handles
-    the user-defined control codes for sideband communication
+    the user-defined control codes for sideband communication.
 
 Arguments:
 
-    QueueContext - The object context associated with the queue
-
+    QueueContext - The object context associated with the queue.
     Request - Pointer to Request Packet.
 
 Return Value:
 
-    NT ntStatus code.
+    NTSTATUS
 
 --*/
 {
     NTSTATUS ntStatus;
     HID_XFER_PACKET packet;
     ULONG reportSize;
-    DMF_CONTEXT_VirtualHidMIni* moduleContext;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONTEXT_VirtualHidMini* moduleContext;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
 
     moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
@@ -764,7 +756,7 @@ Return Value:
 }
 
 NTSTATUS
-VirtualHidMIni_GetInputReport(
+VirtualHidMini_GetInputReport(
     _In_ DMFMODULE DmfModule,
     _In_ WDFREQUEST Request
     )
@@ -776,21 +768,20 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue
-
+    QueueContext - The object context associated with the queue.
     Request - Pointer to Request Packet.
 
 Return Value:
 
-    NT ntStatus code.
+    NTSTATUS
 
 --*/
 {
     NTSTATUS ntStatus;
     HID_XFER_PACKET packet;
     ULONG reportSize;
-    DMF_CONTEXT_VirtualHidMIni* moduleContext;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONTEXT_VirtualHidMini* moduleContext;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
 
     moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
@@ -799,7 +790,7 @@ Return Value:
                                                       &packet);
     if ( !NT_SUCCESS(ntStatus) )
     {
-        return ntStatus;
+        goto Exit;
     }
 
     ntStatus = moduleConfig->GetInputReport(DmfModule,
@@ -818,12 +809,13 @@ Return Value:
                                  reportSize);
     }
 
+Exit:
+
     return ntStatus;
 }
 
-
 NTSTATUS
-VirtualHidMIni_SetOutputReport(
+VirtualHidMini_SetOutputReport(
     _In_ DMFMODULE DmfModule,
     _In_ WDFREQUEST Request
     )
@@ -835,21 +827,20 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue
-
+    QueueContext - The object context associated with the queue.
     Request - Pointer to Request Packet.
 
 Return Value:
 
-    NT ntStatus code.
+    NTSTATUS
 
 --*/
 {
     NTSTATUS                ntStatus;
     HID_XFER_PACKET         packet;
     ULONG                   reportSize;
-    DMF_CONTEXT_VirtualHidMIni* moduleContext;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONTEXT_VirtualHidMini* moduleContext;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
 ;
     moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
@@ -858,7 +849,7 @@ Return Value:
                                                      &packet);
     if ( !NT_SUCCESS(ntStatus) )
     {
-        return ntStatus;
+        goto Exit;
     }
 
     ntStatus = moduleConfig->SetOutputReport(DmfModule,
@@ -877,11 +868,13 @@ Return Value:
                                  reportSize);
     }
 
+Exit:
+
     return ntStatus;
 }
 
 NTSTATUS
-VirtualHidMIni_StringIdGet(
+VirtualHidMini_StringIdGet(
     _In_ WDFREQUEST Request,
     _Out_ ULONG* StringId,
     _Out_ ULONG* LanguageId
@@ -898,7 +891,7 @@ Arguments:
 
 Return Value:
 
-    NT status code.
+    NTSTATUS
 
 --*/
 {
@@ -963,7 +956,7 @@ Return Value:
         ntStatus = STATUS_INVALID_BUFFER_SIZE;
         TraceEvents(TRACE_LEVEL_ERROR,
                     DMF_TRACE, 
-                    "VirtualHidMIni_StringIdGet: invalid input buffer. size %d expect %d",
+                    "VirtualHidMini_StringIdGet: invalid input buffer. size %d expect %d",
                     (int)inputBufferLength,
                     (int)sizeof(ULONG));
         goto Exit;
@@ -990,7 +983,7 @@ Exit:
 }
 
 NTSTATUS
-VirtualHidMIni_IndexedStringGet(
+VirtualHidMini_IndexedStringGet(
     _In_ DMFMODULE DmfModule,
     _In_  WDFREQUEST Request
     )
@@ -1006,21 +999,21 @@ Arguments:
 
 Return Value:
 
-    NT status code.
+    NTSTATUS
 
 --*/
 {
     NTSTATUS ntStatus;
     ULONG languageId, stringIndex;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
 
     moduleConfig = DMF_CONFIG_GET(DmfModule);
 
-    ntStatus = VirtualHidMIni_StringIdGet(Request,
+    ntStatus = VirtualHidMini_StringIdGet(Request,
                                                 &stringIndex,
                                                 &languageId);
 
-    // While we don't use the language id, some minidrivers might.
+    // While we don't use the language id, some mini drivers might.
     //
     UNREFERENCED_PARAMETER(languageId);
 
@@ -1036,9 +1029,9 @@ Return Value:
         goto Exit;
     }
 
-    ntStatus = RequestCopyFromBuffer(Request,
-                                    moduleConfig->Strings[stringIndex],
-                                    wcslen(moduleConfig->Strings[stringIndex]));
+    ntStatus = VirtualHidMini_RequestCopyFromBuffer(Request,
+                                                    moduleConfig->Strings[stringIndex],
+                                                    wcslen(moduleConfig->Strings[stringIndex]));
 
 Exit:
 
@@ -1046,7 +1039,7 @@ Exit:
 }
 
 NTSTATUS
-VirtualHidMIni_StringGet(
+VirtualHidMini_StringGet(
     _In_ DMFMODULE DmfModule,
     _In_  WDFREQUEST Request
     )
@@ -1062,7 +1055,7 @@ Arguments:
 
 Return Value:
 
-    NT status code.
+    NTSTATUS
 
 --*/
 {
@@ -1071,15 +1064,15 @@ Return Value:
     ULONG stringId;
     size_t stringSizeCb;
     PWSTR string;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
 
     moduleConfig = DMF_CONFIG_GET(DmfModule);
 
-    ntStatus = VirtualHidMIni_StringIdGet(Request,
+    ntStatus = VirtualHidMini_StringIdGet(Request,
                            &stringId,
                            &languageId);
 
-    // While we don't use the language id, some minidrivers might.
+    // While we don't use the language id, some mini drivers might.
     //
     UNREFERENCED_PARAMETER(languageId);
 
@@ -1108,9 +1101,9 @@ Return Value:
             goto Exit;
     }
 
-    ntStatus = RequestCopyFromBuffer(Request,
-                                     string,
-                                     stringSizeCb);
+    ntStatus = VirtualHidMini_RequestCopyFromBuffer(Request,
+                                                    string,
+                                                    stringSizeCb);
 
 Exit:
 
@@ -1120,7 +1113,7 @@ Exit:
 _IRQL_requires_same_
 _IRQL_requires_max_(DISPATCH_LEVEL)
 BOOLEAN
-DMF_VirtualHidMIni_ModuleDeviceIoControl(
+DMF_VirtualHidMini_ModuleDeviceIoControl(
     _In_ DMFMODULE DmfModule,
     _In_ WDFQUEUE Queue,
     _In_ WDFREQUEST Request,
@@ -1132,7 +1125,7 @@ DMF_VirtualHidMIni_ModuleDeviceIoControl(
 
 Routine Description:
 
-    Template callback for ModuleInternalDeviceIoControl for a given DMF Module.
+    Implements IOCTL handling.
 
 Arguments:
 
@@ -1153,8 +1146,8 @@ Return Value:
     BOOLEAN handled;
     NTSTATUS ntStatus;
     BOOLEAN completeRequest;
-    DMF_CONTEXT_VirtualHidMIni* moduleContext;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
+    DMF_CONTEXT_VirtualHidMini* moduleContext;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
 
     UNREFERENCED_PARAMETER(DmfModule);
     UNREFERENCED_PARAMETER(Queue);
@@ -1176,172 +1169,171 @@ Return Value:
 
     switch (IoControlCode)
     {
-    case IOCTL_HID_GET_DEVICE_DESCRIPTOR:   // METHOD_NEITHER
-        //
-        // Retrieves the device's HID descriptor.
-        //
-        _Analysis_assume_(moduleContext->HidDescriptor.bLength != 0);
-        ntStatus = RequestCopyFromBuffer(Request,
-                                         (VOID*)moduleConfig->HidDescriptor,
-                                         moduleConfig->HidDescriptor->bLength);
-        break;
+        case IOCTL_HID_GET_DEVICE_DESCRIPTOR:   // METHOD_NEITHER
+            //
+            // Retrieves the device's HID descriptor.
+            //
+            _Analysis_assume_(moduleContext->HidDescriptor.bLength != 0);
+            ntStatus = VirtualHidMini_RequestCopyFromBuffer(Request,
+                                                            (VOID*)moduleConfig->HidDescriptor,
+                                                            moduleConfig->HidDescriptor->bLength);
+            break;
 
-    case IOCTL_HID_GET_DEVICE_ATTRIBUTES:   // METHOD_NEITHER
-        //
-        //Retrieves a device's attributes in a HID_DEVICE_ATTRIBUTES structure.
-        //
-        ntStatus = RequestCopyFromBuffer(Request,
-                                         &moduleConfig->HidDeviceAttributes,
-                                         sizeof(HID_DEVICE_ATTRIBUTES));
-        break;
+        case IOCTL_HID_GET_DEVICE_ATTRIBUTES:   // METHOD_NEITHER
+            //
+            //Retrieves a device's attributes in a HID_DEVICE_ATTRIBUTES structure.
+            //
+            ntStatus = VirtualHidMini_RequestCopyFromBuffer(Request,
+                                                            &moduleConfig->HidDeviceAttributes,
+                                                            sizeof(HID_DEVICE_ATTRIBUTES));
+            break;
 
-    case IOCTL_HID_GET_REPORT_DESCRIPTOR:   // METHOD_NEITHER
-        //
-        //Obtains the report descriptor for the HID device.
-        //
-        ntStatus = RequestCopyFromBuffer(Request,
-                                         (VOID*)moduleConfig->HidReportDescriptor,
-                                         moduleConfig->HidDescriptor->DescriptorList[0].wReportLength);
-        break;
+        case IOCTL_HID_GET_REPORT_DESCRIPTOR:   // METHOD_NEITHER
+            //
+            //Obtains the report descriptor for the HID device.
+            //
+            ntStatus = VirtualHidMini_RequestCopyFromBuffer(Request,
+                                                            (VOID*)moduleConfig->HidReportDescriptor,
+                                                            moduleConfig->HidDescriptor->DescriptorList[0].wReportLength);
+            break;
 
-    case IOCTL_HID_READ_REPORT:             // METHOD_NEITHER
-        //
-        // Returns a report from the device into a class driver-supplied
-        // buffer.
-        //
-        ntStatus = VirtualHidMInit_ReadReport(DmfModule,
-                                                    Request,
-                                                    &completeRequest);
-        break;
+        case IOCTL_HID_READ_REPORT:             // METHOD_NEITHER
+            //
+            // Returns a report from the device into a class driver-supplied
+            // buffer.
+            //
+            ntStatus = VirtualHidMinit_ReadReport(DmfModule,
+                                                  Request,
+                                                  &completeRequest);
+            break;
 
-    case IOCTL_HID_WRITE_REPORT:            // METHOD_NEITHER
-        // Transmits a class driver-supplied report to the device.
-        //
-        ntStatus = VirtualHidMIni_WriteReport(DmfModule,
-                                                    Request);
-        break;
-
-#ifdef _KERNEL_MODE
-
-    case IOCTL_HID_GET_FEATURE:             // METHOD_OUT_DIRECT
-
-        ntStatus = VirtualHidMIni_GetFeature(DmfModule,
-                                                   Request);
-        break;
-
-    case IOCTL_HID_SET_FEATURE:             // METHOD_IN_DIRECT
-
-        ntStatus = VirtualHidMIni_SetFeature(DmfModule,
-                                                   Request);
-        break;
-
-    case IOCTL_HID_GET_INPUT_REPORT:        // METHOD_OUT_DIRECT
-
-        ntStatus = VirtualHidMIni_GetInputReport(DmfModule,
-                                                       Request);
-        break;
-
-    case IOCTL_HID_SET_OUTPUT_REPORT:       // METHOD_IN_DIRECT
-
-        ntStatus = VirtualHidMIni_SetOutputReport(DmfModule,
-                                                        Request);
-        break;
-
-#else // UMDF specific
-
-    //
-    // HID minidriver IOCTL uses HID_XFER_PACKET which contains an embedded pointer.
-    //
-    //   typedef struct _HID_XFER_PACKET {
-    //     PUCHAR reportBuffer;
-    //     ULONG  reportBufferLen;
-    //     UCHAR  reportId;
-    //   } HID_XFER_PACKET, *PHID_XFER_PACKET;
-    //
-    // UMDF cannot handle embedded pointers when marshalling buffers between processes.
-    // Therefore a special driver mshidumdf.sys is introduced to convert such IRPs to
-    // new IRPs (with new IOCTL name like IOCTL_UMDF_HID_Xxxx) where:
-    //
-    //   reportBuffer - passed as one buffer inside the IRP
-    //   reportId     - passed as a second buffer inside the IRP
-    //
-    // The new IRP is then passed to UMDF host and driver for further processing.
-    //
-
-    case IOCTL_UMDF_HID_GET_FEATURE:        // METHOD_NEITHER
-
-        ntStatus = VirtualHidMIni_GetFeature(DmfModule,
-                                                   Request);
-        break;
-
-    case IOCTL_UMDF_HID_SET_FEATURE:        // METHOD_NEITHER
-
-        ntStatus = VirtualHidMIni_SetFeature(DmfModule,
-                                                   Request);
-        break;
-
-    case IOCTL_UMDF_HID_GET_INPUT_REPORT:  // METHOD_NEITHER
-
-        ntStatus = VirtualHidMIni_GetInputReport(DmfModule,
-                                                       Request);
-        break;
-
-    case IOCTL_UMDF_HID_SET_OUTPUT_REPORT: // METHOD_NEITHER
-
-        ntStatus = VirtualHidMIni_SetOutputReport(DmfModule,
-                                                        Request);
-        break;
-
-#endif // _KERNEL_MODE
-
-    case IOCTL_HID_GET_STRING:                      // METHOD_NEITHER
-
-        ntStatus = VirtualHidMIni_StringGet(DmfModule,
+        case IOCTL_HID_WRITE_REPORT:            // METHOD_NEITHER
+            // Transmits a class driver-supplied report to the device.
+            //
+            ntStatus = VirtualHidMini_WriteReport(DmfModule,
                                                   Request);
-        break;
+            break;
 
-    case IOCTL_HID_GET_INDEXED_STRING:              // METHOD_OUT_DIRECT
+    #ifdef _KERNEL_MODE
 
-        ntStatus = VirtualHidMIni_IndexedStringGet(DmfModule,
-                                                         Request);
-        break;
+        case IOCTL_HID_GET_FEATURE:             // METHOD_OUT_DIRECT
 
-    case IOCTL_HID_SEND_IDLE_NOTIFICATION_REQUEST:  // METHOD_NEITHER
+            ntStatus = VirtualHidMini_GetFeature(DmfModule,
+                                                       Request);
+            break;
+
+        case IOCTL_HID_SET_FEATURE:             // METHOD_IN_DIRECT
+
+            ntStatus = VirtualHidMini_SetFeature(DmfModule,
+                                                       Request);
+            break;
+
+        case IOCTL_HID_GET_INPUT_REPORT:        // METHOD_OUT_DIRECT
+
+            ntStatus = VirtualHidMini_GetInputReport(DmfModule,
+                                                           Request);
+            break;
+
+        case IOCTL_HID_SET_OUTPUT_REPORT:       // METHOD_IN_DIRECT
+
+            ntStatus = VirtualHidMini_SetOutputReport(DmfModule,
+                                                            Request);
+            break;
+
+    #else // UMDF specific
+
         //
-        // This has the USBSS Idle notification callback. If the lower driver
-        // can handle it (e.g. USB stack can handle it) then pass it down
-        // otherwise complete it here as not inplemented. For a virtual
-        // device, idling is not needed.
+        // HID minidriver IOCTL uses HID_XFER_PACKET which contains an embedded pointer.
         //
-        // Not implemented. fall through...
+        //   typedef struct _HID_XFER_PACKET {
+        //     PUCHAR reportBuffer;
+        //     ULONG  reportBufferLen;
+        //     UCHAR  reportId;
+        //   } HID_XFER_PACKET, *PHID_XFER_PACKET;
         //
-        // TODO: Callback Client
+        // UMDF cannot handle embedded pointers when marshalling buffers between processes.
+        // Therefore a special driver mshidumdf.sys is introduced to convert such IRPs to
+        // new IRPs (with new IOCTL name like IOCTL_UMDF_HID_Xxxx) where:
         //
-    case IOCTL_HID_ACTIVATE_DEVICE:                 // METHOD_NEITHER
-    case IOCTL_HID_DEACTIVATE_DEVICE:               // METHOD_NEITHER
-    case IOCTL_GET_PHYSICAL_DESCRIPTOR:             // METHOD_OUT_DIRECT
+        //   reportBuffer - passed as one buffer inside the IRP
+        //   reportId     - passed as a second buffer inside the IRP
         //
-        // We don't do anything for these IOCTLs but some minidrivers might.
+        // The new IRP is then passed to UMDF host and driver for further processing.
         //
-        // Not implemented. fall through...
-        //
-        // TODO: Callback Client
-        //
-        ntStatus = STATUS_NOT_IMPLEMENTED;
-        break;
-    default:
-        // Let other Modules handle the IOCTL.
-        //
-        handled = FALSE;
-        ntStatus = STATUS_NOT_SUPPORTED;
-        break;
+
+        case IOCTL_UMDF_HID_GET_FEATURE:        // METHOD_NEITHER
+
+            ntStatus = VirtualHidMini_GetFeature(DmfModule,
+                                                 Request);
+            break;
+
+        case IOCTL_UMDF_HID_SET_FEATURE:        // METHOD_NEITHER
+
+            ntStatus = VirtualHidMini_SetFeature(DmfModule,
+                                                 Request);
+            break;
+
+        case IOCTL_UMDF_HID_GET_INPUT_REPORT:  // METHOD_NEITHER
+
+            ntStatus = VirtualHidMini_GetInputReport(DmfModule,
+                                                     Request);
+            break;
+
+        case IOCTL_UMDF_HID_SET_OUTPUT_REPORT: // METHOD_NEITHER
+
+            ntStatus = VirtualHidMini_SetOutputReport(DmfModule,
+                                                      Request);
+            break;
+
+    #endif // _KERNEL_MODE
+
+        case IOCTL_HID_GET_STRING:                      // METHOD_NEITHER
+
+            ntStatus = VirtualHidMini_StringGet(DmfModule,
+                                                Request);
+            break;
+
+        case IOCTL_HID_GET_INDEXED_STRING:              // METHOD_OUT_DIRECT
+
+            ntStatus = VirtualHidMini_IndexedStringGet(DmfModule,
+                                                       Request);
+            break;
+
+        case IOCTL_HID_SEND_IDLE_NOTIFICATION_REQUEST:  // METHOD_NEITHER
+            //
+            // This has the USB's Idle notification callback. If the lower driver
+            // can handle it (e.g. USB stack can handle it) then pass it down
+            // otherwise complete it here as not implemented. For a virtual
+            // device, idling is not needed.
+            //
+            // Not implemented. fall through...
+            //
+            // TODO: Callback Client
+            //
+        case IOCTL_HID_ACTIVATE_DEVICE:                 // METHOD_NEITHER
+        case IOCTL_HID_DEACTIVATE_DEVICE:               // METHOD_NEITHER
+        case IOCTL_GET_PHYSICAL_DESCRIPTOR:             // METHOD_OUT_DIRECT
+            // Don't do anything for these IOCTLs but some mini drivers might.
+            //
+            // Not implemented. fall through...
+            //
+            // TODO: Callback Client
+            //
+            ntStatus = STATUS_NOT_IMPLEMENTED;
+            break;
+        default:
+            // Let other Modules handle the IOCTL.
+            //
+            handled = FALSE;
+            ntStatus = STATUS_NOT_SUPPORTED;
+            break;
     }
 
-    //
     // Complete the request. Information value has already been set by request
     // handlers.
     //
-    if (handled && completeRequest) 
+    if (handled && 
+        completeRequest) 
     {
         WdfRequestComplete(Request,
                            ntStatus);
@@ -1367,14 +1359,14 @@ _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 static
 NTSTATUS
-DMF_VirtualHidMIni_Open(
+DMF_VirtualHidMini_Open(
     _In_ DMFMODULE DmfModule
     )
 /*++
 
 Routine Description:
 
-    Initialize an instance of a DMF Module of type VirtualHidMIni.
+    Initialize an instance of a DMF Module of type VirtualHidMini.
 
 Arguments:
 
@@ -1387,8 +1379,8 @@ Return Value:
 --*/
 {
     NTSTATUS ntStatus;
-    DMF_CONFIG_VirtualHidMIni* moduleConfig;
-    DMF_CONTEXT_VirtualHidMIni* moduleContext;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
+    DMF_CONTEXT_VirtualHidMini* moduleContext;
     WDFDEVICE device;
 
     PAGED_CODE();
@@ -1396,11 +1388,8 @@ Return Value:
     FuncEntry(DMF_TRACE);
 
     moduleContext = DMF_CONTEXT_GET(DmfModule);
-
     moduleConfig = DMF_CONFIG_GET(DmfModule);
-
     device = DMF_ParentDeviceGet(DmfModule);
-
 
     ntStatus = STATUS_SUCCESS;
 
@@ -1414,14 +1403,14 @@ Return Value:
 _IRQL_requires_max_(PASSIVE_LEVEL)
 static
 VOID
-DMF_VirtualHidMIni_Close(
+DMF_VirtualHidMini_Close(
     _In_ DMFMODULE DmfModule
     )
 /*++
 
 Routine Description:
 
-    Uninitialize an instance of a DMF Module of type VirtualHidMIni.
+    Uninitialize an instance of a DMF Module of type VirtualHidMini.
 
 Arguments:
 
@@ -1452,7 +1441,7 @@ Return Value:
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSTATUS
-DMF_VirtualHidMIni_Create(
+DMF_VirtualHidMini_Create(
     _In_ WDFDEVICE Device,
     _In_ DMF_MODULE_ATTRIBUTES* DmfModuleAttributes,
     _In_ WDF_OBJECT_ATTRIBUTES* ObjectAttributes,
@@ -1462,7 +1451,7 @@ DMF_VirtualHidMIni_Create(
 
 Routine Description:
 
-    Create an instance of a DMF Module of type VirtualHidMIni.
+    Create an instance of a DMF Module of type VirtualHidMini.
 
 Arguments:
 
@@ -1478,37 +1467,37 @@ Return Value:
 --*/
 {
     NTSTATUS ntStatus;
-    DMF_MODULE_DESCRIPTOR dmfModuleDescriptor_VirtualHidMIni;
-    DMF_CALLBACKS_DMF dmfCallbacksDmf_VirtualHidMIni;
-    DMF_CALLBACKS_WDF dmfCallbacksWdf_VirtualHidMIni;
+    DMF_MODULE_DESCRIPTOR dmfModuleDescriptor_VirtualHidMini;
+    DMF_CALLBACKS_DMF dmfCallbacksDmf_VirtualHidMini;
+    DMF_CALLBACKS_WDF dmfCallbacksWdf_VirtualHidMini;
 
     PAGED_CODE();
 
     FuncEntry(DMF_TRACE);
 
-    DMF_CALLBACKS_DMF_INIT(&dmfCallbacksDmf_VirtualHidMIni);
-    dmfCallbacksDmf_VirtualHidMIni.DeviceOpen = DMF_VirtualHidMIni_Open;
-    dmfCallbacksDmf_VirtualHidMIni.DeviceClose = DMF_VirtualHidMIni_Close;
+    DMF_CALLBACKS_DMF_INIT(&dmfCallbacksDmf_VirtualHidMini);
+    dmfCallbacksDmf_VirtualHidMini.DeviceOpen = DMF_VirtualHidMini_Open;
+    dmfCallbacksDmf_VirtualHidMini.DeviceClose = DMF_VirtualHidMini_Close;
 
-    DMF_CALLBACKS_WDF_INIT(&dmfCallbacksWdf_VirtualHidMIni);
+    DMF_CALLBACKS_WDF_INIT(&dmfCallbacksWdf_VirtualHidMini);
 #if defined(DMF_USER_MODE)
-    dmfCallbacksWdf_VirtualHidMIni.ModuleDeviceIoControl = DMF_VirtualHidMIni_ModuleDeviceIoControl;
+    dmfCallbacksWdf_VirtualHidMini.ModuleDeviceIoControl = DMF_VirtualHidMini_ModuleDeviceIoControl;
 #else
-    dmfCallbacksWdf_VirtualHidMIni.ModuleInternalDeviceIoControl = DMF_VirtualHidMIni_ModuleDeviceIoControl;
+    dmfCallbacksWdf_VirtualHidMini.ModuleInternalDeviceIoControl = DMF_VirtualHidMini_ModuleDeviceIoControl;
 #endif
-    DMF_MODULE_DESCRIPTOR_INIT_CONTEXT_TYPE(dmfModuleDescriptor_VirtualHidMIni,
-                                            VirtualHidMIni,
-                                            DMF_CONTEXT_VirtualHidMIni,
+    DMF_MODULE_DESCRIPTOR_INIT_CONTEXT_TYPE(dmfModuleDescriptor_VirtualHidMini,
+                                            VirtualHidMini,
+                                            DMF_CONTEXT_VirtualHidMini,
                                             DMF_MODULE_OPTIONS_PASSIVE,
                                             DMF_MODULE_OPEN_OPTION_OPEN_PrepareHardware);
 
-    dmfModuleDescriptor_VirtualHidMIni.CallbacksDmf = &dmfCallbacksDmf_VirtualHidMIni;
-    dmfModuleDescriptor_VirtualHidMIni.CallbacksWdf = &dmfCallbacksWdf_VirtualHidMIni;
+    dmfModuleDescriptor_VirtualHidMini.CallbacksDmf = &dmfCallbacksDmf_VirtualHidMini;
+    dmfModuleDescriptor_VirtualHidMini.CallbacksWdf = &dmfCallbacksWdf_VirtualHidMini;
 
     ntStatus = DMF_ModuleCreate(Device,
                                 DmfModuleAttributes,
                                 ObjectAttributes,
-                                &dmfModuleDescriptor_VirtualHidMIni,
+                                &dmfModuleDescriptor_VirtualHidMini,
                                 DmfModule);
     if (! NT_SUCCESS(ntStatus))
     {
@@ -1516,12 +1505,12 @@ Return Value:
         goto Exit;
     }
 
-    DMF_CONTEXT_VirtualHidMIni* moduleContext = DMF_CONTEXT_GET(*DmfModule);
+    DMF_CONTEXT_VirtualHidMini* moduleContext = DMF_CONTEXT_GET(*DmfModule);
 
     // NOTE: Queues associated with DMFMODULE must be created in the Create callback.
     //
-    ntStatus = VirtualHidMIni_ManualQueueCreate(*DmfModule,
-                                                      &moduleContext->ManualQueue);
+    ntStatus = VirtualHidMini_ManualQueueCreate(*DmfModule,
+                                                &moduleContext->ManualQueue);
     if (! NT_SUCCESS(ntStatus))
     {
         WdfObjectDelete(*DmfModule);
@@ -1539,5 +1528,5 @@ Exit:
 // Module Methods
 //
 
-// eof: Dmf_VirtualHidMIni.c
+// eof: Dmf_VirtualHidMini.c
 //

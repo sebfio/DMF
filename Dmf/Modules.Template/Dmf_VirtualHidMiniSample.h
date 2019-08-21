@@ -5,11 +5,11 @@
 
 Module Name:
 
-    Dmf_VirtualHidMIniSample.h
+    Dmf_VirtualHidMiniSample.h
 
 Abstract:
 
-    Companion file to Dmf_VirtualHidMIniSample.c.
+    Companion file to Dmf_VirtualHidMiniSample.c.
 
 Environment:
 
@@ -25,17 +25,17 @@ Environment:
 typedef struct
 {
     ULONG ReadFromRegistry;
-} DMF_CONFIG_VirtualHidMIniSample;
+} DMF_CONFIG_VirtualHidMiniSample;
 
 // This macro declares the following functions:
-// DMF_VirtualHidMIniSample_ATTRIBUTES_INIT()
-// DMF_CONFIG_VirtualHidMIniSample_AND_ATTRIBUTES_INIT()
-// DMF_VirtualHidMIniSample_Create()
+// DMF_VirtualHidMiniSample_ATTRIBUTES_INIT()
+// DMF_CONFIG_VirtualHidMiniSample_AND_ATTRIBUTES_INIT()
+// DMF_VirtualHidMiniSample_Create()
 //
-DECLARE_DMF_MODULE(VirtualHidMIniSample)
+DECLARE_DMF_MODULE(VirtualHidMiniSample)
 
 // Module Methods
 //
 
-// eof: Dmf_VirtualHidMIniSample.h
+// eof: Dmf_VirtualHidMiniSample.h
 //
