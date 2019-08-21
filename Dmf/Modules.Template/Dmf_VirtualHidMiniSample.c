@@ -38,8 +38,11 @@ Environment:
 //
 typedef struct _HIDMINI_INPUT_REPORT
 {
+    // Report Id.
+    //
     UCHAR ReportId;
-
+    // Data in the Read Report.
+    //
     UCHAR Data; 
 } HIDMINI_INPUT_REPORT;
 
@@ -435,15 +438,13 @@ Return Value:
     switch (controlInfo->ControlCode)
     {
         case HIDMINI_CONTROL_CODE_SET_ATTRIBUTES:
-            //
-            // Store the device attributes in device extension
+            // Store the device attributes in device extension.
             //
             hidAttributes->ProductID     = controlInfo->u.Attributes.ProductID;
             hidAttributes->VendorID      = controlInfo->u.Attributes.VendorID;
             hidAttributes->VersionNumber = controlInfo->u.Attributes.VersionNumber;
 
-            //
-            // set ntStatus and information
+            // Set ntStatus and information.
             //
             *ReportSize = reportSize;
             ntStatus = STATUS_SUCCESS;
@@ -526,7 +527,7 @@ Return Value:
     reportBuffer->ReportId = CONTROL_COLLECTION_REPORT_ID;
     reportBuffer->Data     = moduleContext->OutputReport;
 
-    // Report how many bytes were copied
+    // Report how many bytes were copied.
     //
     *ReportSize = reportSize;
     ntStatus = STATUS_SUCCESS;
@@ -632,11 +633,21 @@ Return Value:
 {
     DMFMODULE dmfModuleParent;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
+    HIDMINI_INPUT_REPORT* readReport;
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
     moduleContext = DMF_CONTEXT_GET(dmfModuleParent);
 
-    *Buffer = (UCHAR*)&moduleContext->ReadReport;
+    readReport = &moduleContext->ReadReport;
+
+    // Populate data to return to caller.
+    //
+    readReport->ReportId = CONTROL_FEATURE_REPORT_ID;
+    readReport->Data = moduleContext->DeviceData;
+
+    // Return to caller.
+    //
+    *Buffer = (UCHAR*)readReport;
     *BufferSize = sizeof(HIDMINI_INPUT_REPORT);
 
     return STATUS_SUCCESS;
