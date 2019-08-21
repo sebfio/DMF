@@ -163,7 +163,7 @@ Return Value:
 {
     PDEVICE_CONTEXT deviceContext;
     DMF_MODULE_ATTRIBUTES moduleAttributes;
-    DMF_CONFIG_VirtualHidDeviceMiniSample moduleConfigVirtualHidDeviceMiniSample;
+    DMF_CONFIG_VirtualHidMiniSample moduleConfigVirtualHidDeviceMiniSample;
 
     UNREFERENCED_PARAMETER(Device);
 
@@ -174,8 +174,8 @@ Return Value:
     // VirtualHidDeviceMiniSample
     // --------------------------
     //
-    DMF_CONFIG_VirtualHidDeviceMiniSample_AND_ATTRIBUTES_INIT(&moduleConfigVirtualHidDeviceMiniSample,
-                                                              &moduleAttributes);
+    DMF_CONFIG_VirtualHidMiniSample_AND_ATTRIBUTES_INIT(&moduleConfigVirtualHidDeviceMiniSample,
+                                                        &moduleAttributes);
     DMF_DmfModuleAdd(DmfModuleInit,
                      &moduleAttributes,
                      WDF_NO_OBJECT_ATTRIBUTES,
