@@ -46,6 +46,7 @@
     <ClCompile Include="..\..\Modules.Library\Dmf_ContinuousRequestTarget.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_RequestTarget.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_ResourceHub.c" />
+    <ClCompile Include="..\..\Modules.Library\Dmf_Rundown.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_ScheduledTask.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_SelfTarget.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_SerialTarget.c" />
@@ -58,7 +59,6 @@
     <ClCompile Include="..\..\Modules.Library\Dmf_NotifyUserWithRequest.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_VirtualHidAmbientColorSensor.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_VirtualHidAmbientLightSensor.c" />
-    <ClCompile Include="..\..\Modules.Library\Dmf_VirtualHidDeviceMini.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_VirtualHidDeviceVhf.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_VirtualHidKeyboard.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_Wmi.c" />
@@ -87,6 +87,7 @@
     <ClInclude Include="..\..\Modules.Library\Dmf_ContinuousRequestTarget.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_RequestTarget.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_ResourceHub.h" />
+    <ClInclude Include="..\..\Modules.Library\Dmf_Rundown.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_ScheduledTask.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_SelfTarget.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_SerialTarget.h" />
@@ -99,7 +100,6 @@
     <ClInclude Include="..\..\Modules.Library\Dmf_NotifyUserWithRequest.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_VirtualHidAmbientColorSensor.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_VirtualHidAmbientLightSensor.h" />
-    <ClInclude Include="..\..\Modules.Library\Dmf_VirtualHidDeviceMini.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_VirtualHidDeviceVhf.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_VirtualHidKeyboard.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_Wmi.h" />
@@ -388,11 +388,11 @@
   <ItemGroup>
     <None Include="..\..\Modules.Library\Dmf_DefaultTarget.md" />
     <None Include="..\..\Modules.Library\Dmf_InterruptResource.md" />
+    <None Include="..\..\Modules.Library\Dmf_Rundown.md" />
     <None Include="..\..\Modules.Library\Dmf_SpbTarget.md" />
     <None Include="..\..\Modules.Library\Dmf_String.md" />
     <None Include="..\..\Modules.Library\Dmf_VirtualHidAmbientColorSensor.md" />
     <None Include="..\..\Modules.Library\Dmf_VirtualHidAmbientLightSensor.md" />
-    <None Include="..\..\Modules.Library\Dmf_VirtualHidDeviceMini.md" />
     <None Include="..\..\Modules.Library\Dmf_VirtualHidKeyboard.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

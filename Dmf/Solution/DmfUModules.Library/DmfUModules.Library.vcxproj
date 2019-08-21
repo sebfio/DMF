@@ -170,6 +170,7 @@
     <ClInclude Include="..\..\Modules.Library\Dmf_ComponentFirmwareUpdateHidTransport.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_DefaultTarget.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_File.h" />
+    <ClInclude Include="..\..\Modules.Library\Dmf_I2cTarget.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_Interface_ComponentFirmwareUpdate.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_QueuedWorkItem.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_PingPongBuffer.h" />
@@ -186,7 +187,6 @@
     <ClInclude Include="..\..\Modules.Library\Dmf_ThreadedBufferQueue.h" />
     <ClInclude Include="..\..\Modules.Library\DmfModules.Library.Trace.h" />
     <ClInclude Include="..\..\Modules.Library\Dmf_Transport_ComponentFirmwareUpdate.h" />
-    <ClInclude Include="..\..\Modules.Library\Dmf_VirtualHidDeviceMini.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Modules.Library\Dmf_CmApi.c" />
@@ -194,6 +194,7 @@
     <ClCompile Include="..\..\Modules.Library\Dmf_ComponentFirmwareUpdateHidTransport.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_DefaultTarget.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_File.c" />
+    <ClCompile Include="..\..\Modules.Library\Dmf_I2cTarget.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_Interface_ComponentFirmwareUpdate.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_QueuedWorkItem.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_PingPongBuffer.c" />
@@ -208,7 +209,6 @@
     <ClCompile Include="..\..\Modules.Library\Dmf_Thread.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_NotifyUserWithRequest.c" />
     <ClCompile Include="..\..\Modules.Library\Dmf_ThreadedBufferQueue.c" />
-    <ClCompile Include="..\..\Modules.Library\Dmf_VirtualHidDeviceMini.c" />
   </ItemGroup>
   <ItemGroup>
     <MessageCompile Include="..\..\Modules.Library\Dmf_NotifyUserWithRequest_EventLog.mc" />
@@ -235,7 +235,6 @@
     <None Include="..\..\Modules.Library\Dmf_String.md" />
     <None Include="..\..\Modules.Library\Dmf_Thread.md" />
     <None Include="..\..\Modules.Library\Dmf_ThreadedBufferQueue.md" />
-    <None Include="..\..\Modules.Library\Dmf_VirtualHidDeviceMini.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
