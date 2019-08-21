@@ -1049,9 +1049,12 @@ Return Value:
         goto Exit;
     }
 
+    PWCHAR stringToReturn = moduleConfig->Strings[stringIndex];
+    size_t sizeofStringToReturn = wcslen(stringToReturn) * sizeof(WCHAR);
+
     ntStatus = VirtualHidMini_RequestCopyFromBuffer(Request,
-                                                    moduleConfig->Strings[stringIndex],
-                                                    wcslen(moduleConfig->Strings[stringIndex]));
+                                                    stringToReturn,
+                                                    sizeofStringToReturn);
 
 Exit:
 
