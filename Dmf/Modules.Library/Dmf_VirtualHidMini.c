@@ -1185,7 +1185,7 @@ Return Value:
 
     moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
-DbgBreakPoint();
+
     switch (IoControlCode)
     {
         case IOCTL_HID_GET_DEVICE_DESCRIPTOR:   // METHOD_NEITHER
