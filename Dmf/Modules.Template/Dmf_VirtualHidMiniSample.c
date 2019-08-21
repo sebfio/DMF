@@ -81,7 +81,6 @@ DMF_MODULE_DECLARE_CONFIG(VirtualHidMiniSample)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
-//
 // These are the device attributes returned by the mini driver in response
 // to IOCTL_HID_GET_DEVICE_ATTRIBUTES.
 //
@@ -89,7 +88,6 @@ DMF_MODULE_DECLARE_CONFIG(VirtualHidMiniSample)
 #define HIDMINI_VID             0xDEED
 #define HIDMINI_VERSION         0x0101
 
-//
 // Custom control codes are defined here. They are to be used for sideband 
 // communication with the hid minidriver. These control codes are sent to 
 // the hid minidriver using Hid_SetFeature() API to a custom collection 
@@ -99,17 +97,16 @@ DMF_MODULE_DECLARE_CONFIG(VirtualHidMiniSample)
 #define  HIDMINI_CONTROL_CODE_DUMMY1                      0x01
 #define  HIDMINI_CONTROL_CODE_DUMMY2                      0x02
 
-//
-// This is the report id of the collection to which the control codes are sent
+// This is the report id of the collection to which the control codes are sent.
 //
 #define CONTROL_COLLECTION_REPORT_ID                      0x01
 #define TEST_COLLECTION_REPORT_ID                         0x02
 
 #define MAXIMUM_STRING_LENGTH           (126 * sizeof(WCHAR))
-#define VHIDMINI_DEVICE_STRING          L"UMDF Virtual hidmini device"  
-#define VHIDMINI_MANUFACTURER_STRING    L"UMDF Virtual hidmini device Manufacturer string"  
-#define VHIDMINI_PRODUCT_STRING         L"UMDF Virtual hidmini device Product string"  
-#define VHIDMINI_SERIAL_NUMBER_STRING   L"UMDF Virtual hidmini device Serial Number string"  
+#define VHIDMINI_DEVICE_STRING          L"UMDF Virtual hidmini device"
+#define VHIDMINI_MANUFACTURER_STRING    L"UMDF Virtual hidmini device Manufacturer string"
+#define VHIDMINI_PRODUCT_STRING         L"UMDF Virtual hidmini device Product string"
+#define VHIDMINI_SERIAL_NUMBER_STRING   L"UMDF Virtual hidmini device Serial Number string"
 #define VHIDMINI_DEVICE_STRING_INDEX    5
 
 #include <pshpack1.h>
@@ -242,14 +239,11 @@ Return Value:
     NTSTATUS
 
 --*/
-
 {
     NTSTATUS ntStatus;
     ULONG reportSize;
     HIDMINI_OUTPUT_REPORT* outputReport;
     DMFMODULE dmfModuleParent;
-
-    KdPrint(("WriteReport\n"));
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
 
@@ -258,7 +252,7 @@ Return Value:
         // Return error for unknown collection
         //
         ntStatus = STATUS_INVALID_PARAMETER;
-        KdPrint(("WriteReport: unknown report id %d\n", Packet->reportId));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "VirtualHidMiniSample_WriteReport: unknown report id %d", Packet->reportId);
         goto Exit;
     }
 
@@ -269,8 +263,7 @@ Return Value:
     if (Packet->reportBufferLen < reportSize)
     {
         ntStatus = STATUS_INVALID_BUFFER_SIZE;
-        KdPrint(("WriteReport: invalid input buffer. size %d, expect %d\n",
-                            Packet->reportBufferLen, reportSize));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "VirtualHidMiniSample_WriteReport: invalid input buffer. size %d, expect %d", Packet->reportBufferLen, reportSize);
         goto Exit;
     }
 
@@ -305,13 +298,12 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue
-
+    QueueContext - The object context associated with the queue.
     Request - Pointer to  Request Packet.
 
 Return Value:
 
-    NT ntStatus code.
+    NTSTATUS
 
 --*/
 {
@@ -326,19 +318,16 @@ Return Value:
 
     PHID_DEVICE_ATTRIBUTES  hidAttributes = &moduleContext->HidDeviceAttributes;
 
-    KdPrint(("GetFeature\n"));
-
     if (Packet->reportId != CONTROL_COLLECTION_REPORT_ID)
     {
         // If collection ID is not for control collection then handle
         // this request just as you would for a regular collection.
         //
         ntStatus = STATUS_INVALID_PARAMETER;
-        KdPrint(("GetFeature: invalid report id %d\n", Packet->reportId));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "VirtualHidMiniSample_GetFeature fails: invalid report id %d", Packet->reportId);
         goto Exit;
     }
 
-    //
     // Since output buffer is for write only (no read allowed by UMDF in output
     // buffer), any read from output buffer would be reading garbage), so don't
     // let app embed custom control code in output buffer. The minidriver can
@@ -354,12 +343,13 @@ Return Value:
     if (Packet->reportBufferLen < reportSize) 
     {
         ntStatus = STATUS_INVALID_BUFFER_SIZE;
-        KdPrint(("GetFeature: output buffer too small. Size %d, expect %d\n",
-                            Packet->reportBufferLen, reportSize));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE,
+                    "VirtualHidMiniSample_GetFeature fails: output buffer too small. Size %d, expect %d",
+                    Packet->reportBufferLen,
+                    reportSize);
         goto Exit;
     }
 
-    //
     // Since this device has one report ID, hidclass would pass on the report
     // ID in the buffer (it wouldn't if report descriptor did not have any report
     // ID). However, since UMDF allows only writes to an output buffer, we can't
@@ -398,13 +388,12 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue
-
+    QueueContext - The object context associated with the queue.
     Request - Pointer to Request Packet.
 
 Return Value:
 
-    NT ntStatus code.
+    NTSTATUS
 
 --*/
 {
@@ -419,15 +408,13 @@ Return Value:
     
     PHID_DEVICE_ATTRIBUTES  hidAttributes = &moduleContext->HidDeviceAttributes;
 
-    KdPrint(("SetFeature\n"));
-
     if (Packet->reportId != CONTROL_COLLECTION_REPORT_ID)
     {
         // If collection ID is not for control collection then handle
         // this request just as you would for a regular collection.
         //
         ntStatus = STATUS_INVALID_PARAMETER;
-        KdPrint(("SetFeature: invalid report id %d\n", Packet->reportId));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "VirtualHidMiniSample_SetFeature fails: invalid report id %d", Packet->reportId);
         goto Exit;
     }
 
@@ -438,8 +425,9 @@ Return Value:
     if (Packet->reportBufferLen < reportSize) 
     {
         ntStatus = STATUS_INVALID_BUFFER_SIZE;
-        KdPrint(("SetFeature: invalid input buffer. size %d, expect %d\n",
-                            Packet->reportBufferLen, reportSize));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE,
+                    "VirtualHidMiniSample_SetFeature fails: invalid input buffer. size %d, expect %d",
+                    Packet->reportBufferLen, reportSize);
         goto Exit;
     }
 
@@ -463,18 +451,15 @@ Return Value:
 
         case HIDMINI_CONTROL_CODE_DUMMY1:
             ntStatus = STATUS_NOT_IMPLEMENTED;
-            KdPrint(("SetFeature: HIDMINI_CONTROL_CODE_DUMMY1\n"));
             break;
 
         case HIDMINI_CONTROL_CODE_DUMMY2:
             ntStatus = STATUS_NOT_IMPLEMENTED;
-            KdPrint(("SetFeature: HIDMINI_CONTROL_CODE_DUMMY2\n"));
             break;
 
         default:
             ntStatus = STATUS_NOT_IMPLEMENTED;
-            KdPrint(("SetFeature: Unknown control Code 0x%x\n",
-                                controlInfo->ControlCode));
+            TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "VirtualHidMiniSample_SetFeature fails: Unknown control Code 0x%x", controlInfo->ControlCode);
             break;
     }
 
@@ -497,26 +482,23 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue
-
+    QueueContext - The object context associated with the queue.
     Request - Pointer to Request Packet.
 
 Return Value:
 
-    NT ntStatus code.
+    NTSTATUS
 
 --*/
 {
-    NTSTATUS                ntStatus;
-    ULONG                   reportSize;
-    HIDMINI_INPUT_REPORT*   reportBuffer;
+    NTSTATUS ntStatus;
+    ULONG reportSize;
+    HIDMINI_INPUT_REPORT* reportBuffer;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
     DMFMODULE dmfModuleParent;
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
     moduleContext = DMF_CONTEXT_GET(dmfModuleParent);
-
-    KdPrint(("GetInputReport\n"));
 
     if (Packet->reportId != CONTROL_COLLECTION_REPORT_ID)
     {
@@ -524,7 +506,7 @@ Return Value:
         // this request just as you would for a regular collection.
         //
         ntStatus = STATUS_INVALID_PARAMETER;
-        KdPrint(("GetInputReport: invalid report id %d\n", Packet->reportId));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "VirtualHidMiniSample_GetInputReport fails: invalid report id %d", Packet->reportId);
         goto Exit;
     }
 
@@ -532,8 +514,10 @@ Return Value:
     if (Packet->reportBufferLen < reportSize)
     {
         ntStatus = STATUS_INVALID_BUFFER_SIZE;
-        KdPrint(("GetInputReport: output buffer too small. Size %d, expect %d\n",
-                            Packet->reportBufferLen, reportSize));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE,
+                    "VirtualHidMiniSample_GetInputReport fails: output buffer too small. Size %d, expect %d",
+                    Packet->reportBufferLen,
+                    reportSize);
         goto Exit;
     }
 
@@ -552,7 +536,6 @@ Exit:
     return ntStatus;
 }
 
-
 NTSTATUS
 VirtualHidMiniSample_SetOutputReport(
     _In_ DMFMODULE DmfModule,
@@ -567,13 +550,12 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue
-
+    QueueContext - The object context associated with the queue.
     Request - Pointer to Request Packet.
 
 Return Value:
 
-    NT ntStatus code.
+    NTSTATUS
 
 --*/
 {
@@ -586,15 +568,13 @@ Return Value:
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
     moduleContext = DMF_CONTEXT_GET(dmfModuleParent);
 
-    KdPrint(("SetOutputReport\n"));
-
     if (Packet->reportId != CONTROL_COLLECTION_REPORT_ID)
     {
         // If collection ID is not for control collection then handle
         // this request just as you would for a regular collection.
         //
         ntStatus = STATUS_INVALID_PARAMETER;
-        KdPrint(("SetOutputReport: unknown report id %d\n", Packet->reportId));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "VirtualHidMiniSample_SetOutputReport fails: unknown report id %d", Packet->reportId);
         goto Exit;
     }
 
@@ -605,8 +585,10 @@ Return Value:
     if (Packet->reportBufferLen < reportSize)
     {
         ntStatus = STATUS_INVALID_BUFFER_SIZE;
-        KdPrint(("SetOutputReport: invalid input buffer. size %d, expect %d\n",
-                            Packet->reportBufferLen, reportSize));
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE,
+                    "VirtualHidMiniSample_SetOutputReport fails: invalid input buffer. size %d, expect %d",
+                    Packet->reportBufferLen,
+                    reportSize);
         goto Exit;
     }
 
@@ -630,6 +612,23 @@ VirtualHidMiniSample_RetrieveNextInputReport(
     _Out_ UCHAR** Buffer,
     _Out_ ULONG* BufferSize
     )
+/*++
+
+Routine Description:
+
+    Called by Child to allow Parent to populate an input report.
+
+Arguments:
+
+    DmfModule - Child Module's handle.
+    Buffer - Address of buffer with input report data returned buffer to caller.
+    BufferSize - Size of data in buffer returned to caller.
+
+Return Value:
+
+    NTSTATUS
+
+--*/
 {
     DMFMODULE dmfModuleParent;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
@@ -706,12 +705,12 @@ Return Value:
 
     if (moduleConfig->ReadFromRegistry)
     {
-        // TODO: Read HID descirptors from Registry.
+        // TODO: Read HID descriptors from Registry.
         //
     }
 
     // VirtualHidMini
-    // --------------------
+    // --------------
     //
     DMF_CONFIG_VirtualHidMini_AND_ATTRIBUTES_INIT(&virtualHidDeviceMiniModuleConfig,
                                                         &moduleAttributes);
@@ -795,8 +794,9 @@ Return Value:
     moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
 
+    // Initialize the device's data.
+    //
     moduleContext->DeviceData = 0;
-
     moduleContext->ReadReport.ReportId = CONTROL_FEATURE_REPORT_ID;
     moduleContext->ReadReport.Data = moduleContext->DeviceData;
 
@@ -805,39 +805,6 @@ Return Value:
     FuncExit(DMF_TRACE, "ntStatus=%!STATUS!", ntStatus);
 
     return ntStatus;
-}
-#pragma code_seg()
-
-#pragma code_seg("PAGE")
-_IRQL_requires_max_(PASSIVE_LEVEL)
-static
-VOID
-DMF_VirtualHidMiniSample_Close(
-    _In_ DMFMODULE DmfModule
-    )
-/*++
-
-Routine Description:
-
-    Uninitialize an instance of a DMF Module of type VirtualHidMiniSample.
-
-Arguments:
-
-    DmfModule - The given DMF Module.
-
-Return Value:
-
-    NTSTATUS
-
---*/
-{
-    PAGED_CODE();
-
-    UNREFERENCED_PARAMETER(DmfModule);
-
-    FuncEntry(DMF_TRACE);
-
-    FuncExitVoid(DMF_TRACE);
 }
 #pragma code_seg()
 
@@ -886,7 +853,6 @@ Return Value:
     DMF_CALLBACKS_DMF_INIT(&dmfCallbacksDmf_VirtualHidMiniSample);
     dmfCallbacksDmf_VirtualHidMiniSample.ChildModulesAdd = DMF_VirtualHidMiniSample_ChildModulesAdd;
     dmfCallbacksDmf_VirtualHidMiniSample.DeviceOpen = DMF_VirtualHidMiniSample_Open;
-    dmfCallbacksDmf_VirtualHidMiniSample.DeviceClose = DMF_VirtualHidMiniSample_Close;
 
     DMF_MODULE_DESCRIPTOR_INIT_CONTEXT_TYPE(dmfModuleDescriptor_VirtualHidMiniSample,
                                             VirtualHidMiniSample,
