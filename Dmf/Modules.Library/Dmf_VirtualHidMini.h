@@ -5,11 +5,11 @@
 
 Module Name:
 
-    Dmf_VirtualHidDeviceMini.h
+    Dmf_VirtualHidMIni.h
 
 Abstract:
 
-    Companion file to Dmf_VirtualHidDeviceMini.c.
+    Companion file to Dmf_VirtualHidMIni.c.
 
 Environment:
 
@@ -101,41 +101,41 @@ typedef struct _HID_DEVICE_ATTRIBUTES {
 
 #endif
 
-typedef UCHAR VirtualHidDeviceMini_HID_REPORT_DESCRIPTOR;
+typedef UCHAR VirtualHidMIni_HID_REPORT_DESCRIPTOR;
 
 typedef 
 NTSTATUS
-EVT_VirtualHidDeviceMini_WriteReport(_In_ DMFMODULE,
+EVT_VirtualHidMIni_WriteReport(_In_ DMFMODULE,
                                      _In_ HID_XFER_PACKET* Packet,
                                      _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidDeviceMini_GetFeature(_In_ DMFMODULE,
+EVT_VirtualHidMIni_GetFeature(_In_ DMFMODULE,
                                     _In_ HID_XFER_PACKET* Packet,
                                     _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidDeviceMini_SetFeature(_In_ DMFMODULE,
+EVT_VirtualHidMIni_SetFeature(_In_ DMFMODULE,
                                     _In_ HID_XFER_PACKET* Packet,
                                     _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidDeviceMini_GetInputReport(_In_ DMFMODULE,
+EVT_VirtualHidMIni_GetInputReport(_In_ DMFMODULE,
                                         _In_ HID_XFER_PACKET* Packet,
                                         _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidDeviceMini_SetOutputReport(_In_ DMFMODULE,
+EVT_VirtualHidMIni_SetOutputReport(_In_ DMFMODULE,
                                          _In_ HID_XFER_PACKET* Packet,
                                          _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidDeviceMini_RetrieveNextInputReport(_In_ DMFMODULE,
+EVT_VirtualHidMIni_RetrieveNextInputReport(_In_ DMFMODULE,
                                                  _Out_ UCHAR** Buffer,
                                                  _Out_ ULONG* BufferSize);
 
@@ -175,23 +175,23 @@ typedef struct
 
     // Client callback handlers.
     //
-    EVT_VirtualHidDeviceMini_WriteReport* WriteReport;
-    EVT_VirtualHidDeviceMini_GetFeature* GetFeature;
-    EVT_VirtualHidDeviceMini_SetFeature* SetFeature;
-    EVT_VirtualHidDeviceMini_GetInputReport* GetInputReport;
-    EVT_VirtualHidDeviceMini_SetOutputReport* SetOutputReport;
-    EVT_VirtualHidDeviceMini_RetrieveNextInputReport* RetrieveNextInputReport;
-} DMF_CONFIG_VirtualHidDeviceMini;
+    EVT_VirtualHidMIni_WriteReport* WriteReport;
+    EVT_VirtualHidMIni_GetFeature* GetFeature;
+    EVT_VirtualHidMIni_SetFeature* SetFeature;
+    EVT_VirtualHidMIni_GetInputReport* GetInputReport;
+    EVT_VirtualHidMIni_SetOutputReport* SetOutputReport;
+    EVT_VirtualHidMIni_RetrieveNextInputReport* RetrieveNextInputReport;
+} DMF_CONFIG_VirtualHidMIni;
 
 // This macro declares the following functions:
-// DMF_VirtualHidDeviceMini_ATTRIBUTES_INIT()
-// DMF_CONFIG_VirtualHidDeviceMini_AND_ATTRIBUTES_INIT()
-// DMF_VirtualHidDeviceMini_Create()
+// DMF_VirtualHidMIni_ATTRIBUTES_INIT()
+// DMF_CONFIG_VirtualHidMIni_AND_ATTRIBUTES_INIT()
+// DMF_VirtualHidMIni_Create()
 //
-DECLARE_DMF_MODULE(VirtualHidDeviceMini)
+DECLARE_DMF_MODULE(VirtualHidMIni)
 
 // Module Methods
 //
 
-// eof: Dmf_VirtualHidDeviceMini.h
+// eof: Dmf_VirtualHidMIni.h
 //

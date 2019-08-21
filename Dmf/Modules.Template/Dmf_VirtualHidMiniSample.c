@@ -5,7 +5,7 @@
 
 Module Name:
 
-    Dmf_VirtualHidDeviceMiniSample.c
+    Dmf_VirtualHidMIniSample.c
 
 Abstract:
 
@@ -27,7 +27,7 @@ Environment:
 #include "DmfModules.Template.h"
 #include "DmfModules.Template.Trace.h"
 
-#include "Dmf_VirtualHidDeviceMiniSample.tmh"
+#include "Dmf_VirtualHidMIniSample.tmh"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // Module Private Enumerations and Structures
@@ -52,7 +52,7 @@ typedef struct
 {
     // Underlying VHIDMINI2 support.
     //
-    DMFMODULE DmfModuleVirtualHidDeviceMini;
+    DMFMODULE DmfModuleVirtualHidMIni;
     // Private data for this device.
     //
     BYTE DeviceData;
@@ -60,17 +60,17 @@ typedef struct
     HID_DEVICE_ATTRIBUTES HidDeviceAttributes;
     HID_DESCRIPTOR HidDescriptor;
     HIDMINI_INPUT_REPORT ReadReport;
-} DMF_CONTEXT_VirtualHidDeviceMiniSample;
+} DMF_CONTEXT_VirtualHidMIniSample;
 
 // This macro declares the following function:
 // DMF_CONTEXT_GET()
 //
-DMF_MODULE_DECLARE_CONTEXT(VirtualHidDeviceMiniSample)
+DMF_MODULE_DECLARE_CONTEXT(VirtualHidMIniSample)
 
 // This macro declares the following function:
 // DMF_CONFIG_GET()
 //
-DMF_MODULE_DECLARE_CONFIG(VirtualHidDeviceMiniSample)
+DMF_MODULE_DECLARE_CONFIG(VirtualHidMIniSample)
 
 // MemoryTag.
 //
@@ -178,7 +178,7 @@ typedef UCHAR HID_REPORT_DESCRIPTOR;
 // by the mini driver in response to IOCTL_HID_GET_REPORT_DESCRIPTOR.
 //
 HID_REPORT_DESCRIPTOR
-g_VirtualHidDeviceMiniSample_DefaultReportDescriptor[] = 
+g_VirtualHidMIniSample_DefaultReportDescriptor[] = 
 {
     0x06,0x00, 0xFF,                    // USAGE_PAGE (Vendor Defined Usage Page)
     0x09,0x01,                          // USAGE (Vendor Usage 0x01)
@@ -206,7 +206,7 @@ g_VirtualHidDeviceMiniSample_DefaultReportDescriptor[] =
 // of report descriptor is currently the size of G_DefaultReportDescriptor.
 //
 HID_DESCRIPTOR
-g_VirtualHidDeviceMiniSample_DefaultHidDescriptor = 
+g_VirtualHidMIniSample_DefaultHidDescriptor = 
 {
     0x09,   // length of HID descriptor
     0x21,   // descriptor type == HID  0x21
@@ -215,12 +215,12 @@ g_VirtualHidDeviceMiniSample_DefaultHidDescriptor =
     0x01,   // number of HID class descriptors
     {                                       //DescriptorList[0]
         0x22,                               //report descriptor type 0x22
-        sizeof(g_VirtualHidDeviceMiniSample_DefaultReportDescriptor)   //total length of report descriptor
+        sizeof(g_VirtualHidMIniSample_DefaultReportDescriptor)   //total length of report descriptor
     }
 };
 
 NTSTATUS
-VirtualHidDeviceMiniSample_WriteReport(
+VirtualHidMIniSample_WriteReport(
     _In_ DMFMODULE DmfModule,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
@@ -276,7 +276,7 @@ Return Value:
 
     outputReport = (HIDMINI_OUTPUT_REPORT*)Packet->reportBuffer;
 
-    DMF_CONTEXT_VirtualHidDeviceMiniSample* moduleContext;
+    DMF_CONTEXT_VirtualHidMIniSample* moduleContext;
 
     // Store the device data in the Module Context.
     //
@@ -292,7 +292,7 @@ Exit:
 }
 
 HRESULT
-VirtualHidDeviceMiniSample_GetFeature(
+VirtualHidMIniSample_GetFeature(
     _In_ DMFMODULE DmfModule,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
@@ -318,7 +318,7 @@ Return Value:
     NTSTATUS ntStatus;
     ULONG reportSize;
     MY_DEVICE_ATTRIBUTES* myAttributes;
-    DMF_CONTEXT_VirtualHidDeviceMiniSample* moduleContext;
+    DMF_CONTEXT_VirtualHidMIniSample* moduleContext;
     DMFMODULE dmfModuleParent;
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
@@ -383,7 +383,7 @@ Exit:
 }
 
 NTSTATUS
-VirtualHidDeviceMiniSample_SetFeature(
+VirtualHidMIniSample_SetFeature(
     _In_ DMFMODULE DmfModule,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
@@ -411,7 +411,7 @@ Return Value:
     NTSTATUS ntStatus;
     ULONG reportSize;
     HIDMINI_CONTROL_INFO* controlInfo;
-    DMF_CONTEXT_VirtualHidDeviceMiniSample* moduleContext;
+    DMF_CONTEXT_VirtualHidMIniSample* moduleContext;
     DMFMODULE dmfModuleParent;
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
@@ -484,7 +484,7 @@ Exit:
 }
 
 NTSTATUS
-VirtualHidDeviceMiniSample_GetInputReport(
+VirtualHidMIniSample_GetInputReport(
     _In_ DMFMODULE DmfModule,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
@@ -510,7 +510,7 @@ Return Value:
     NTSTATUS                ntStatus;
     ULONG                   reportSize;
     HIDMINI_INPUT_REPORT*   reportBuffer;
-    DMF_CONTEXT_VirtualHidDeviceMiniSample* moduleContext;
+    DMF_CONTEXT_VirtualHidMIniSample* moduleContext;
     DMFMODULE dmfModuleParent;
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
@@ -554,7 +554,7 @@ Exit:
 
 
 NTSTATUS
-VirtualHidDeviceMiniSample_SetOutputReport(
+VirtualHidMIniSample_SetOutputReport(
     _In_ DMFMODULE DmfModule,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
@@ -580,7 +580,7 @@ Return Value:
     NTSTATUS ntStatus;
     ULONG reportSize;
     HIDMINI_OUTPUT_REPORT* reportBuffer;
-    DMF_CONTEXT_VirtualHidDeviceMiniSample* moduleContext;
+    DMF_CONTEXT_VirtualHidMIniSample* moduleContext;
     DMFMODULE dmfModuleParent;
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
@@ -625,14 +625,14 @@ Exit:
 }
 
 NTSTATUS
-VirtualHidDeviceMiniSample_RetrieveNextInputReport(
+VirtualHidMIniSample_RetrieveNextInputReport(
     _In_ DMFMODULE DmfModule,
     _Out_ UCHAR** Buffer,
     _Out_ ULONG* BufferSize
     )
 {
     DMFMODULE dmfModuleParent;
-    DMF_CONTEXT_VirtualHidDeviceMiniSample* moduleContext;
+    DMF_CONTEXT_VirtualHidMIniSample* moduleContext;
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
     moduleContext = DMF_CONTEXT_GET(dmfModuleParent);
@@ -653,7 +653,7 @@ VirtualHidDeviceMiniSample_RetrieveNextInputReport(
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
-PWSTR g_VirtualHidDeviceMiniSample_Strings[] =
+PWSTR g_VirtualHidMIniSample_Strings[] =
 {
     NULL,
     NULL,
@@ -666,7 +666,7 @@ PWSTR g_VirtualHidDeviceMiniSample_Strings[] =
 #pragma code_seg("PAGE")
 _IRQL_requires_max_(PASSIVE_LEVEL)
 VOID
-DMF_VirtualHidDeviceMiniSample_ChildModulesAdd(
+DMF_VirtualHidMIniSample_ChildModulesAdd(
     _In_ DMFMODULE DmfModule,
     _In_ DMF_MODULE_ATTRIBUTES* DmfParentModuleAttributes,
     _In_ PDMFMODULE_INIT DmfModuleInit
@@ -690,9 +690,9 @@ Return Value:
 --*/
 {
     DMF_MODULE_ATTRIBUTES moduleAttributes;
-    DMF_CONFIG_VirtualHidDeviceMiniSample* moduleConfig;
-    DMF_CONTEXT_VirtualHidDeviceMiniSample* moduleContext;
-    DMF_CONFIG_VirtualHidDeviceMini virtualHidDeviceMiniModuleConfig;
+    DMF_CONFIG_VirtualHidMIniSample* moduleConfig;
+    DMF_CONTEXT_VirtualHidMIniSample* moduleContext;
+    DMF_CONFIG_VirtualHidMIni virtualHidDeviceMiniModuleConfig;
     const ULONG timerPeriodInSeconds = 5;
 
     PAGED_CODE();
@@ -710,20 +710,20 @@ Return Value:
         //
     }
 
-    // VirtualHidDeviceMini
+    // VirtualHidMIni
     // --------------------
     //
-    DMF_CONFIG_VirtualHidDeviceMini_AND_ATTRIBUTES_INIT(&virtualHidDeviceMiniModuleConfig,
+    DMF_CONFIG_VirtualHidMIni_AND_ATTRIBUTES_INIT(&virtualHidDeviceMiniModuleConfig,
                                                         &moduleAttributes);
 
     virtualHidDeviceMiniModuleConfig.VendorId = HIDMINI_VID;
     virtualHidDeviceMiniModuleConfig.ProductId = HIDMINI_PID;
     virtualHidDeviceMiniModuleConfig.VersionNumber = HIDMINI_VERSION;
 
-    virtualHidDeviceMiniModuleConfig.HidDescriptor = &g_VirtualHidDeviceMiniSample_DefaultHidDescriptor;
-    virtualHidDeviceMiniModuleConfig.HidDescriptorLength = sizeof(g_VirtualHidDeviceMiniSample_DefaultHidDescriptor);
-    virtualHidDeviceMiniModuleConfig.HidReportDescriptor = g_VirtualHidDeviceMiniSample_DefaultReportDescriptor;
-    virtualHidDeviceMiniModuleConfig.HidReportDescriptorLength = sizeof(g_VirtualHidDeviceMiniSample_DefaultReportDescriptor);
+    virtualHidDeviceMiniModuleConfig.HidDescriptor = &g_VirtualHidMIniSample_DefaultHidDescriptor;
+    virtualHidDeviceMiniModuleConfig.HidDescriptorLength = sizeof(g_VirtualHidMIniSample_DefaultHidDescriptor);
+    virtualHidDeviceMiniModuleConfig.HidReportDescriptor = g_VirtualHidMIniSample_DefaultReportDescriptor;
+    virtualHidDeviceMiniModuleConfig.HidReportDescriptorLength = sizeof(g_VirtualHidMIniSample_DefaultReportDescriptor);
 
     // Set virtual device attributes.
     //
@@ -732,12 +732,12 @@ Return Value:
     virtualHidDeviceMiniModuleConfig.HidDeviceAttributes.VersionNumber = HIDMINI_VERSION;
     virtualHidDeviceMiniModuleConfig.HidDeviceAttributes.Size = sizeof(HID_DEVICE_ATTRIBUTES);
 
-    virtualHidDeviceMiniModuleConfig.GetInputReport = VirtualHidDeviceMiniSample_GetInputReport;
-    virtualHidDeviceMiniModuleConfig.GetFeature = VirtualHidDeviceMiniSample_GetFeature;
-    virtualHidDeviceMiniModuleConfig.SetFeature = VirtualHidDeviceMiniSample_SetFeature;
-    virtualHidDeviceMiniModuleConfig.SetOutputReport = VirtualHidDeviceMiniSample_SetOutputReport;
-    virtualHidDeviceMiniModuleConfig.WriteReport = VirtualHidDeviceMiniSample_WriteReport;
-    virtualHidDeviceMiniModuleConfig.RetrieveNextInputReport = VirtualHidDeviceMiniSample_RetrieveNextInputReport;
+    virtualHidDeviceMiniModuleConfig.GetInputReport = VirtualHidMIniSample_GetInputReport;
+    virtualHidDeviceMiniModuleConfig.GetFeature = VirtualHidMIniSample_GetFeature;
+    virtualHidDeviceMiniModuleConfig.SetFeature = VirtualHidMIniSample_SetFeature;
+    virtualHidDeviceMiniModuleConfig.SetOutputReport = VirtualHidMIniSample_SetOutputReport;
+    virtualHidDeviceMiniModuleConfig.WriteReport = VirtualHidMIniSample_WriteReport;
+    virtualHidDeviceMiniModuleConfig.RetrieveNextInputReport = VirtualHidMIniSample_RetrieveNextInputReport;
 
     virtualHidDeviceMiniModuleConfig.StringSizeCbManufacturer = sizeof(VHIDMINI_MANUFACTURER_STRING);
     virtualHidDeviceMiniModuleConfig.StringManufacturer = VHIDMINI_MANUFACTURER_STRING;
@@ -746,15 +746,15 @@ Return Value:
     virtualHidDeviceMiniModuleConfig.StringSizeCbSerialNumber = sizeof(VHIDMINI_SERIAL_NUMBER_STRING);
     virtualHidDeviceMiniModuleConfig.StringSerialNumber = VHIDMINI_SERIAL_NUMBER_STRING;
 
-    virtualHidDeviceMiniModuleConfig.Strings = g_VirtualHidDeviceMiniSample_Strings;
-    virtualHidDeviceMiniModuleConfig.NumberOfStrings = ARRAYSIZE(g_VirtualHidDeviceMiniSample_Strings);
+    virtualHidDeviceMiniModuleConfig.Strings = g_VirtualHidMIniSample_Strings;
+    virtualHidDeviceMiniModuleConfig.NumberOfStrings = ARRAYSIZE(g_VirtualHidMIniSample_Strings);
 
     virtualHidDeviceMiniModuleConfig.InputReportPollingIntervalMilliseconds = timerPeriodInSeconds * 1000;
 
     DMF_DmfModuleAdd(DmfModuleInit,
                      &moduleAttributes,
                      WDF_NO_OBJECT_ATTRIBUTES,
-                     &moduleContext->DmfModuleVirtualHidDeviceMini);
+                     &moduleContext->DmfModuleVirtualHidMIni);
 
     FuncExitVoid(DMF_TRACE);
 }
@@ -765,14 +765,14 @@ _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 static
 NTSTATUS
-DMF_VirtualHidDeviceMiniSample_Open(
+DMF_VirtualHidMIniSample_Open(
     _In_ DMFMODULE DmfModule
     )
 /*++
 
 Routine Description:
 
-    Initialize an instance of a DMF Module of type VirtualHidDeviceMiniSample.
+    Initialize an instance of a DMF Module of type VirtualHidMIniSample.
 
 Arguments:
 
@@ -785,8 +785,8 @@ Return Value:
 --*/
 {
     NTSTATUS ntStatus;
-    DMF_CONFIG_VirtualHidDeviceMiniSample* moduleConfig;
-    DMF_CONTEXT_VirtualHidDeviceMiniSample* moduleContext;
+    DMF_CONFIG_VirtualHidMIniSample* moduleConfig;
+    DMF_CONTEXT_VirtualHidMIniSample* moduleContext;
 
     PAGED_CODE();
 
@@ -812,14 +812,14 @@ Return Value:
 _IRQL_requires_max_(PASSIVE_LEVEL)
 static
 VOID
-DMF_VirtualHidDeviceMiniSample_Close(
+DMF_VirtualHidMIniSample_Close(
     _In_ DMFMODULE DmfModule
     )
 /*++
 
 Routine Description:
 
-    Uninitialize an instance of a DMF Module of type VirtualHidDeviceMiniSample.
+    Uninitialize an instance of a DMF Module of type VirtualHidMIniSample.
 
 Arguments:
 
@@ -850,7 +850,7 @@ Return Value:
 _IRQL_requires_max_(PASSIVE_LEVEL)
 _Must_inspect_result_
 NTSTATUS
-DMF_VirtualHidDeviceMiniSample_Create(
+DMF_VirtualHidMIniSample_Create(
     _In_ WDFDEVICE Device,
     _In_ DMF_MODULE_ATTRIBUTES* DmfModuleAttributes,
     _In_ WDF_OBJECT_ATTRIBUTES* ObjectAttributes,
@@ -860,7 +860,7 @@ DMF_VirtualHidDeviceMiniSample_Create(
 
 Routine Description:
 
-    Create an instance of a DMF Module of type VirtualHidDeviceMiniSample.
+    Create an instance of a DMF Module of type VirtualHidMIniSample.
 
 Arguments:
 
@@ -876,30 +876,30 @@ Return Value:
 --*/
 {
     NTSTATUS ntStatus;
-    DMF_MODULE_DESCRIPTOR dmfModuleDescriptor_VirtualHidDeviceMiniSample;
-    DMF_CALLBACKS_DMF dmfCallbacksDmf_VirtualHidDeviceMiniSample;
+    DMF_MODULE_DESCRIPTOR dmfModuleDescriptor_VirtualHidMIniSample;
+    DMF_CALLBACKS_DMF dmfCallbacksDmf_VirtualHidMIniSample;
 
     PAGED_CODE();
 
     FuncEntry(DMF_TRACE);
 
-    DMF_CALLBACKS_DMF_INIT(&dmfCallbacksDmf_VirtualHidDeviceMiniSample);
-    dmfCallbacksDmf_VirtualHidDeviceMiniSample.ChildModulesAdd = DMF_VirtualHidDeviceMiniSample_ChildModulesAdd;
-    dmfCallbacksDmf_VirtualHidDeviceMiniSample.DeviceOpen = DMF_VirtualHidDeviceMiniSample_Open;
-    dmfCallbacksDmf_VirtualHidDeviceMiniSample.DeviceClose = DMF_VirtualHidDeviceMiniSample_Close;
+    DMF_CALLBACKS_DMF_INIT(&dmfCallbacksDmf_VirtualHidMIniSample);
+    dmfCallbacksDmf_VirtualHidMIniSample.ChildModulesAdd = DMF_VirtualHidMIniSample_ChildModulesAdd;
+    dmfCallbacksDmf_VirtualHidMIniSample.DeviceOpen = DMF_VirtualHidMIniSample_Open;
+    dmfCallbacksDmf_VirtualHidMIniSample.DeviceClose = DMF_VirtualHidMIniSample_Close;
 
-    DMF_MODULE_DESCRIPTOR_INIT_CONTEXT_TYPE(dmfModuleDescriptor_VirtualHidDeviceMiniSample,
-                                            VirtualHidDeviceMiniSample,
-                                            DMF_CONTEXT_VirtualHidDeviceMiniSample,
+    DMF_MODULE_DESCRIPTOR_INIT_CONTEXT_TYPE(dmfModuleDescriptor_VirtualHidMIniSample,
+                                            VirtualHidMIniSample,
+                                            DMF_CONTEXT_VirtualHidMIniSample,
                                             DMF_MODULE_OPTIONS_PASSIVE,
                                             DMF_MODULE_OPEN_OPTION_OPEN_PrepareHardware);
 
-    dmfModuleDescriptor_VirtualHidDeviceMiniSample.CallbacksDmf = &dmfCallbacksDmf_VirtualHidDeviceMiniSample;
+    dmfModuleDescriptor_VirtualHidMIniSample.CallbacksDmf = &dmfCallbacksDmf_VirtualHidMIniSample;
 
     ntStatus = DMF_ModuleCreate(Device,
                                 DmfModuleAttributes,
                                 ObjectAttributes,
-                                &dmfModuleDescriptor_VirtualHidDeviceMiniSample,
+                                &dmfModuleDescriptor_VirtualHidMIniSample,
                                 DmfModule);
     if (! NT_SUCCESS(ntStatus))
     {
@@ -918,5 +918,5 @@ Exit:
 // Module Methods
 //
 
-// eof: Dmf_VirtualHidDeviceMiniSample.c
+// eof: Dmf_VirtualHidMIniSample.c
 //

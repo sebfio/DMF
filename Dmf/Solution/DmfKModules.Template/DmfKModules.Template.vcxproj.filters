@@ -83,7 +83,7 @@
     <ClInclude Include="..\..\Modules.Template\Dmf_NonPnp_Public.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Modules.Template\Dmf_VirtualHidDeviceMiniSample.h">
+    <ClInclude Include="..\..\Modules.Template\Dmf_VirtualHidMiniSample.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -121,7 +121,7 @@
     <ClCompile Include="..\..\Modules.Template\Dmf_NonPnp.c">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Modules.Template\Dmf_VirtualHidDeviceMiniSample.c">
+    <ClCompile Include="..\..\Modules.Template\Dmf_VirtualHidMiniSample.c">
       <Filter>Modules</Filter>
     </ClCompile>
   </ItemGroup>
@@ -138,7 +138,7 @@
     <None Include="..\..\Modules.Template\Dmf_NonPnp.md">
       <Filter>Documentation</Filter>
     </None>
-    <None Include="..\..\Modules.Template\Dmf_VirtualHidDeviceMiniSample.md">
+    <None Include="..\..\Modules.Template\Dmf_VirtualHidMiniSample.md">
       <Filter>Documentation</Filter>
     </None>
   </ItemGroup>

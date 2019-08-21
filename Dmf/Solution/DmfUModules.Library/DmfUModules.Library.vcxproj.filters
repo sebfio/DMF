@@ -156,7 +156,7 @@
     <ClInclude Include="..\..\Modules.Library\Dmf_I2cTarget.h">
       <Filter>Headers\Modules\Targets</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Modules.Library\Dmf_VirtualHidDeviceMini.h">
+    <ClInclude Include="..\..\Modules.Library\Dmf_VirtualHidMini.h">
       <Filter>Headers\Modules\Hid</Filter>
     </ClInclude>
   </ItemGroup>
@@ -221,7 +221,7 @@
     <ClCompile Include="..\..\Modules.Library\Dmf_I2cTarget.c">
       <Filter>Modules\Targets</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Modules.Library\Dmf_VirtualHidDeviceMini.c">
+    <ClCompile Include="..\..\Modules.Library\Dmf_VirtualHidMini.c">
       <Filter>Modules\Hid</Filter>
     </ClCompile>
   </ItemGroup>
@@ -293,7 +293,7 @@
     <None Include="..\..\Modules.Library\Dmf_File.md">
       <Filter>Documentation\Modules\Driver Patterns</Filter>
     </None>
-    <None Include="..\..\Modules.Library\Dmf_VirtualHidDeviceMini.md">
+    <None Include="..\..\Modules.Library\Dmf_VirtualHidMini.md">
       <Filter>Documentation\Modules\Hid</Filter>
     </None>
   </ItemGroup>
