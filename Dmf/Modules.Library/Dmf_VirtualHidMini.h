@@ -20,7 +20,9 @@ Environment:
 
 #pragma once
 
-// TODO: HACK
+// NOTE: These definitions come straight from the DDK. They are not available in User-mode SDK but they
+//       are necessary for defining HID descriptors. For this reason they do not follow the DMF coding
+//       standard. (These definitions have been copied from the DDK include files.)
 //
 #if defined(DMF_USER_MODE)
 
@@ -105,37 +107,42 @@ typedef UCHAR VirtualHidMini_HID_REPORT_DESCRIPTOR;
 
 typedef 
 NTSTATUS
-EVT_VirtualHidMini_WriteReport(_In_ DMFMODULE,
+EVT_VirtualHidMini_WriteReport(_In_ DMFMODULE DmfModule,
+                               _In_ WDFREQUEST Request,
                                _In_ HID_XFER_PACKET* Packet,
                                _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidMini_GetFeature(_In_ DMFMODULE,
+EVT_VirtualHidMini_GetFeature(_In_ DMFMODULE DmfModule,
+                              _In_ WDFREQUEST Request,
                               _In_ HID_XFER_PACKET* Packet,
                               _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidMini_SetFeature(_In_ DMFMODULE,
+EVT_VirtualHidMini_SetFeature(_In_ DMFMODULE DmfModule,
+                              _In_ WDFREQUEST Request,
                               _In_ HID_XFER_PACKET* Packet,
                               _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidMini_GetInputReport(_In_ DMFMODULE,
+EVT_VirtualHidMini_GetInputReport(_In_ DMFMODULE DmfModule,
+                                  _In_ WDFREQUEST Request,
                                   _In_ HID_XFER_PACKET* Packet,
                                   _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidMini_SetOutputReport(_In_ DMFMODULE,
+EVT_VirtualHidMini_SetOutputReport(_In_ DMFMODULE DmfModule,
+                                   _In_ WDFREQUEST Request,
                                    _In_ HID_XFER_PACKET* Packet,
                                    _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
-EVT_VirtualHidMini_RetrieveNextInputReport(_In_ DMFMODULE,
+EVT_VirtualHidMini_RetrieveNextInputReport(_In_ DMFMODULE DmfModule,
                                            _In_ WDFREQUEST Request,
                                            _Out_ UCHAR** Buffer,
                                            _Out_ ULONG* BufferSize);

@@ -258,6 +258,7 @@ Return Value:
 NTSTATUS
 VirtualHidMiniSample_WriteReport(
     _In_ DMFMODULE DmfModule,
+    _In_ WDFREQUEST Request,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
     )
@@ -283,6 +284,8 @@ Return Value:
     ULONG reportSize;
     HIDMINI_OUTPUT_REPORT* outputReport;
     DMFMODULE dmfModuleParent;
+
+    UNREFERENCED_PARAMETER(Request);
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
 
@@ -323,9 +326,10 @@ Exit:
     return ntStatus;
 }
 
-HRESULT
+NTSTATUS
 VirtualHidMiniSample_GetFeature(
     _In_ DMFMODULE DmfModule,
+    _In_ WDFREQUEST Request,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
     )
@@ -337,8 +341,9 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue.
-    Request - Pointer to  Request Packet.
+    DmfModule - Child (DMF_VirtualHidMini) Module's handle.
+    Packet - Contains the target buffer.
+    ReportSize - Indicates how much data is written to target buffer.
 
 Return Value:
 
@@ -351,6 +356,8 @@ Return Value:
     MY_DEVICE_ATTRIBUTES* myAttributes;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
     DMFMODULE dmfModuleParent;
+
+    UNREFERENCED_PARAMETER(Request);
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
     moduleContext = DMF_CONTEXT_GET(dmfModuleParent);
@@ -414,6 +421,7 @@ Exit:
 NTSTATUS
 VirtualHidMiniSample_SetFeature(
     _In_ DMFMODULE DmfModule,
+    _In_ WDFREQUEST Request,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
     )
@@ -427,8 +435,9 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue.
-    Request - Pointer to Request Packet.
+    DmfModule - Child (DMF_VirtualHidMini) Module's handle.
+    Packet - Contains the source buffer.
+    ReportSize - Indicates how much data is read from source buffer.
 
 Return Value:
 
@@ -441,6 +450,8 @@ Return Value:
     HIDMINI_CONTROL_INFO* controlInfo;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
     DMFMODULE dmfModuleParent;
+
+    UNREFERENCED_PARAMETER(Request);
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
     moduleContext = DMF_CONTEXT_GET(dmfModuleParent);
@@ -457,7 +468,7 @@ Return Value:
         goto Exit;
     }
 
-    // before touching control code make sure buffer is big enough.
+    // Before touching control code make sure buffer is big enough.
     //
     reportSize = sizeof(HIDMINI_CONTROL_INFO);
 
@@ -508,6 +519,7 @@ Exit:
 NTSTATUS
 VirtualHidMiniSample_GetInputReport(
     _In_ DMFMODULE DmfModule,
+    _In_ WDFREQUEST Request,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
     )
@@ -519,8 +531,9 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue.
-    Request - Pointer to Request Packet.
+    DmfModule - Child (DMF_VirtualHidMini) Module's handle.
+    Packet - Contains the target buffer.
+    ReportSize - Indicates how much data is written to target buffer.
 
 Return Value:
 
@@ -533,6 +546,8 @@ Return Value:
     HIDMINI_INPUT_REPORT* reportBuffer;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
     DMFMODULE dmfModuleParent;
+
+    UNREFERENCED_PARAMETER(Request);
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
     moduleContext = DMF_CONTEXT_GET(dmfModuleParent);
@@ -576,6 +591,7 @@ Exit:
 NTSTATUS
 VirtualHidMiniSample_SetOutputReport(
     _In_ DMFMODULE DmfModule,
+    _In_ WDFREQUEST Request,
     _In_ HID_XFER_PACKET* Packet,
     _Out_ ULONG* ReportSize
     )
@@ -587,8 +603,9 @@ Routine Description:
 
 Arguments:
 
-    QueueContext - The object context associated with the queue.
-    Request - Pointer to Request Packet.
+    DmfModule - Child (DMF_VirtualHidMini) Module's handle.
+    Packet - Contains the source buffer.
+    ReportSize - Indicates how much data is read from source buffer.
 
 Return Value:
 
@@ -601,6 +618,8 @@ Return Value:
     HIDMINI_OUTPUT_REPORT* reportBuffer;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
     DMFMODULE dmfModuleParent;
+
+    UNREFERENCED_PARAMETER(Request);
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
     moduleContext = DMF_CONTEXT_GET(dmfModuleParent);

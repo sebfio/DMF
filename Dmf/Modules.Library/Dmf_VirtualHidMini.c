@@ -95,18 +95,36 @@ WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(MANUAL_QUEUE_CONTEXT, ManualQueueContextGet);
 //
 
 NTSTATUS
-RequestGetHidXferPacket_ToReadFromDevice(
+VirtualHidMini_RequestGetHidXferPacket_ToReadFromDevice(
     _In_ WDFREQUEST Request,
     _Out_ HID_XFER_PACKET* Packet
     )
+/*++
+
+Routine Description:
+
+    Copy a HID_XFER_PACKET from a given WDFREQUEST in Kernel-mode using
+    the above information.
+
+Arguments:
+
+    Request - The given WDFREQUEST.
+    Packet - Target buffer where HID_XFER_PACKET data is written.
+
+Return Value:
+
+    NTSTATUS
+
+--*/
 {
     NTSTATUS ntStatus;
-    WDF_REQUEST_PARAMETERS params;
+    WDF_REQUEST_PARAMETERS requestParameters;
 
-    WDF_REQUEST_PARAMETERS_INIT(&params);
-    WdfRequestGetParameters(Request, &params);
+    WDF_REQUEST_PARAMETERS_INIT(&requestParameters);
+    WdfRequestGetParameters(Request,
+                            &requestParameters);
 
-    if (params.Parameters.DeviceIoControl.OutputBufferLength < sizeof(HID_XFER_PACKET))
+    if (requestParameters.Parameters.DeviceIoControl.OutputBufferLength < sizeof(HID_XFER_PACKET))
     {
         ntStatus = STATUS_BUFFER_TOO_SMALL;
         TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "Invalid HID_XFER_PACKET");
@@ -125,10 +143,27 @@ Exit:
 }
 
 NTSTATUS
-RequestGetHidXferPacket_ToWriteToDevice(
+VirtualHidMini_RequestGetHidXferPacket_ToWriteToDevice(
     _In_ WDFREQUEST Request,
     _Out_ HID_XFER_PACKET* Packet
     )
+/*++
+
+Routine Description:
+
+    Copy a HID_XFER_PACKET from a given WDFREQUEST in Kernel-mode using
+    the above information.
+
+Arguments:
+
+    Request - The given WDFREQUEST.
+    Packet - Target buffer where HID_XFER_PACKET data is written.
+
+Return Value:
+
+    NTSTATUS
+
+--*/
 {
     NTSTATUS ntStatus;
     WDF_REQUEST_PARAMETERS  params;
@@ -175,18 +210,35 @@ Exit:
 //
 
 NTSTATUS
-RequestGetHidXferPacket_ToReadFromDevice(
+VirtualHidMini_RequestGetHidXferPacket_ToReadFromDevice(
     _In_  WDFREQUEST Request,
     _Out_ HID_XFER_PACKET* Packet
     )
-{
-    //
-    // Driver need to write to the output buffer (so that App can read from it)
-    //
-    //   Report Buffer: Output Buffer
-    //   Report Id    : Input Buffer
-    //
+/*++
 
+Routine Description:
+
+    Copy a HID_XFER_PACKET from a given WDFREQUEST in User-mode using
+    the above information.
+
+    NOTE:
+
+    Driver needs to write to the output buffer (so that application can read from it).
+
+    Report Buffer: Output Buffer
+    Report Id    : Input Buffer
+
+Arguments:
+
+    Request - The given WDFREQUEST.
+    Packet - Target buffer where HID_XFER_PACKET data is written.
+
+Return Value:
+
+    NTSTATUS
+
+--*/
+{
     NTSTATUS ntStatus;
     WDFMEMORY inputMemory;
     WDFMEMORY outputMemory;
@@ -241,25 +293,42 @@ Exit:
 }
 
 NTSTATUS
-RequestGetHidXferPacket_ToWriteToDevice(
+VirtualHidMini_RequestGetHidXferPacket_ToWriteToDevice(
     _In_  WDFREQUEST Request,
     _Out_ HID_XFER_PACKET* Packet
     )
-{
-    //
-    // Driver need to read from the input buffer (which was written by App)
-    //
-    //   Report Buffer: Input Buffer
-    //   Report Id    : Output Buffer Length
-    //
-    // Note that the report id is not stored inside the output buffer, as the
-    // driver has no read-access right to the output buffer, and trying to read
-    // from the buffer will cause an access violation error.
-    //
-    // The workaround is to store the report id in the OutputBufferLength field,
-    // to which the driver does have read-access right.
-    //
+/*++
 
+Routine Description:
+
+    Copy a HID_XFER_PACKET from a given WDFREQUEST in User-mode using
+    the above information.
+
+    NOTE:
+
+    Driver needs to read from the input buffer (which was written by application).
+    
+      Report Buffer: Input Buffer
+      Report Id    : Output Buffer Length
+    
+    Note that the report id is not stored inside the output buffer, as the
+    driver has no read-access right to the output buffer, and trying to read
+    from the buffer will cause an access violation error.
+    
+    The workaround is to store the report id in the OutputBufferLength field,
+    to which the driver does have read-access right.
+
+Arguments:
+
+    Request - The given WDFREQUEST.
+    Packet - Target buffer where HID_XFER_PACKET data is written.
+
+Return Value:
+
+    NTSTATUS
+
+--*/
+{
     NTSTATUS ntStatus;
     WDFMEMORY inputMemory;
     WDFMEMORY outputMemory;
@@ -533,8 +602,8 @@ Return Value:
     ULONG reportSize;
     DMF_CONFIG_VirtualHidMini* moduleConfig;
 
-    ntStatus = RequestGetHidXferPacket_ToWriteToDevice(Request,
-                                                       &packet);
+    ntStatus = VirtualHidMini_RequestGetHidXferPacket_ToWriteToDevice(Request,
+                                                                      &packet);
     if (!NT_SUCCESS(ntStatus))
     {
         goto Exit;
@@ -545,6 +614,7 @@ Return Value:
     // Call Client.
     //
     ntStatus = moduleConfig->WriteReport(DmfModule,
+                                         Request,
                                          &packet,
                                          &reportSize);
     if (STATUS_PENDING == ntStatus)
@@ -554,7 +624,7 @@ Return Value:
     }
     else
     {
-        // Complete the request on behalf of the Client.
+        // Prepare to complete the request on behalf of the Client.
         //
         WdfRequestSetInformation(Request,
                                  reportSize);
@@ -590,14 +660,12 @@ Return Value:
     NTSTATUS ntStatus;
     HID_XFER_PACKET packet;
     ULONG reportSize;
-    DMF_CONTEXT_VirtualHidMini* moduleContext;
     DMF_CONFIG_VirtualHidMini* moduleConfig;
 
-    moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
 
-    ntStatus = RequestGetHidXferPacket_ToReadFromDevice(Request,
-                                                        &packet);
+    ntStatus = VirtualHidMini_RequestGetHidXferPacket_ToReadFromDevice(Request,
+                                                                       &packet);
     if (!NT_SUCCESS(ntStatus)) 
     {
         goto Exit;
@@ -606,8 +674,9 @@ Return Value:
     // Call Client.
     //
     ntStatus = moduleConfig->GetFeature(DmfModule,
-                                      &packet,
-                                      &reportSize);
+                                        Request,
+                                        &packet,
+                                        &reportSize);
     if (STATUS_PENDING == ntStatus)
     {
         // The Client will complete the request asynchronously.
@@ -615,7 +684,7 @@ Return Value:
     }
     else
     {
-        // Complete the request on behalf of the Client.
+        // Prepare to complete the request on behalf of the Client.
         //
         WdfRequestSetInformation(Request,
                                  reportSize);
@@ -659,8 +728,8 @@ Return Value:
     moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
 
-    ntStatus = RequestGetHidXferPacket_ToWriteToDevice(Request,
-                                                     &packet);
+    ntStatus = VirtualHidMini_RequestGetHidXferPacket_ToWriteToDevice(Request,
+                                                                      &packet);
     if ( !NT_SUCCESS(ntStatus) ) 
     {
         goto Exit;
@@ -669,6 +738,7 @@ Return Value:
     // Call Client.
     //
     ntStatus = moduleConfig->SetFeature(DmfModule,
+                                        Request,
                                         &packet,
                                         &reportSize);
     if (STATUS_PENDING == ntStatus)
@@ -678,7 +748,7 @@ Return Value:
     }
     else
     {
-        // Complete the request on behalf of the Client.
+        // Prepare to complete the request on behalf of the Client.
         //
         WdfRequestSetInformation(Request,
                                  reportSize);
@@ -720,8 +790,8 @@ Return Value:
     moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
 
-    ntStatus = RequestGetHidXferPacket_ToReadFromDevice(Request,
-                                                      &packet);
+    ntStatus = VirtualHidMini_RequestGetHidXferPacket_ToReadFromDevice(Request,
+                                                                       &packet);
     if ( !NT_SUCCESS(ntStatus) )
     {
         goto Exit;
@@ -730,8 +800,9 @@ Return Value:
     // Call Client.
     //
     ntStatus = moduleConfig->GetInputReport(DmfModule,
-                                          &packet,
-                                          &reportSize);
+                                            Request,
+                                            &packet,
+                                            &reportSize);
     if (STATUS_PENDING == ntStatus)
     {
         // The Client will complete the request asynchronously.
@@ -739,7 +810,7 @@ Return Value:
     }
     else
     {
-        // Complete the request on behalf of the Client.
+        // Prepare to complete the request on behalf of the Client.
         //
         WdfRequestSetInformation(Request,
                                  reportSize);
@@ -781,8 +852,8 @@ Return Value:
     moduleContext = DMF_CONTEXT_GET(DmfModule);
     moduleConfig = DMF_CONFIG_GET(DmfModule);
 
-    ntStatus = RequestGetHidXferPacket_ToWriteToDevice(Request,
-                                                     &packet);
+    ntStatus = VirtualHidMini_RequestGetHidXferPacket_ToWriteToDevice(Request,
+                                                                      &packet);
     if ( !NT_SUCCESS(ntStatus) )
     {
         goto Exit;
@@ -791,6 +862,7 @@ Return Value:
     // Call Client.
     //
     ntStatus = moduleConfig->SetOutputReport(DmfModule,
+                                             Request,
                                              &packet,
                                              &reportSize);
     if (STATUS_PENDING == ntStatus)
@@ -800,7 +872,7 @@ Return Value:
     }
     else
     {
-        // Complete the request on behalf of the Client.
+        // Prepare to complete the request on behalf of the Client.
         //
         WdfRequestSetInformation(Request,
                                  reportSize);
@@ -986,7 +1058,7 @@ Exit:
 NTSTATUS
 VirtualHidMini_StringGet(
     _In_ DMFMODULE DmfModule,
-    _In_  WDFREQUEST Request
+    _In_ WDFREQUEST Request
     )
 /*++
 
@@ -1012,15 +1084,15 @@ Return Value:
     PWSTR string;
     DMF_CONFIG_VirtualHidMini* moduleConfig;
 
+    // TODO: Add support for Language Id.
+    //
+    UNREFERENCED_PARAMETER(languageId);
+
     moduleConfig = DMF_CONFIG_GET(DmfModule);
 
     ntStatus = VirtualHidMini_StringIdGet(Request,
-                           &stringId,
-                           &languageId);
-
-    // While we don't use the language id, some mini drivers might.
-    //
-    UNREFERENCED_PARAMETER(languageId);
+                                          &stringId,
+                                          &languageId);
 
     if (!NT_SUCCESS(ntStatus)) 
     {
@@ -1272,8 +1344,9 @@ Return Value:
     // Complete the request. Information value has already been set by request
     // handlers.
     //
-    if (handled && 
-        completeRequest) 
+    if ((handled) && 
+        (completeRequest) &&
+        (ntStatus != STATUS_PENDING)) 
     {
         WdfRequestComplete(Request,
                            ntStatus);
@@ -1293,84 +1366,6 @@ Return Value:
 // DMF Module Callbacks
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-
-#pragma code_seg("PAGE")
-_IRQL_requires_max_(PASSIVE_LEVEL)
-_Must_inspect_result_
-static
-NTSTATUS
-DMF_VirtualHidMini_Open(
-    _In_ DMFMODULE DmfModule
-    )
-/*++
-
-Routine Description:
-
-    Initialize an instance of a DMF Module of type VirtualHidMini.
-
-Arguments:
-
-    DmfModule - The given DMF Module.
-
-Return Value:
-
-    NTSTATUS
-
---*/
-{
-    NTSTATUS ntStatus;
-    DMF_CONFIG_VirtualHidMini* moduleConfig;
-    DMF_CONTEXT_VirtualHidMini* moduleContext;
-    WDFDEVICE device;
-
-    PAGED_CODE();
-
-    FuncEntry(DMF_TRACE);
-
-    moduleContext = DMF_CONTEXT_GET(DmfModule);
-    moduleConfig = DMF_CONFIG_GET(DmfModule);
-    device = DMF_ParentDeviceGet(DmfModule);
-
-    ntStatus = STATUS_SUCCESS;
-
-    FuncExit(DMF_TRACE, "ntStatus=%!STATUS!", ntStatus);
-
-    return ntStatus;
-}
-#pragma code_seg()
-
-#pragma code_seg("PAGE")
-_IRQL_requires_max_(PASSIVE_LEVEL)
-static
-VOID
-DMF_VirtualHidMini_Close(
-    _In_ DMFMODULE DmfModule
-    )
-/*++
-
-Routine Description:
-
-    Uninitialize an instance of a DMF Module of type VirtualHidMini.
-
-Arguments:
-
-    DmfModule - The given DMF Module.
-
-Return Value:
-
-    NTSTATUS
-
---*/
-{
-    PAGED_CODE();
-
-    UNREFERENCED_PARAMETER(DmfModule);
-
-    FuncEntry(DMF_TRACE);
-
-    FuncExitVoid(DMF_TRACE);
-}
-#pragma code_seg()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // Public Calls by Client
@@ -1408,16 +1403,11 @@ Return Value:
 {
     NTSTATUS ntStatus;
     DMF_MODULE_DESCRIPTOR dmfModuleDescriptor_VirtualHidMini;
-    DMF_CALLBACKS_DMF dmfCallbacksDmf_VirtualHidMini;
     DMF_CALLBACKS_WDF dmfCallbacksWdf_VirtualHidMini;
 
     PAGED_CODE();
 
     FuncEntry(DMF_TRACE);
-
-    DMF_CALLBACKS_DMF_INIT(&dmfCallbacksDmf_VirtualHidMini);
-    dmfCallbacksDmf_VirtualHidMini.DeviceOpen = DMF_VirtualHidMini_Open;
-    dmfCallbacksDmf_VirtualHidMini.DeviceClose = DMF_VirtualHidMini_Close;
 
     DMF_CALLBACKS_WDF_INIT(&dmfCallbacksWdf_VirtualHidMini);
 #if defined(DMF_USER_MODE)
@@ -1431,7 +1421,6 @@ Return Value:
                                             DMF_MODULE_OPTIONS_PASSIVE,
                                             DMF_MODULE_OPEN_OPTION_OPEN_PrepareHardware);
 
-    dmfModuleDescriptor_VirtualHidMini.CallbacksDmf = &dmfCallbacksDmf_VirtualHidMini;
     dmfModuleDescriptor_VirtualHidMini.CallbacksWdf = &dmfCallbacksWdf_VirtualHidMini;
 
     ntStatus = DMF_ModuleCreate(Device,

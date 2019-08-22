@@ -79,10 +79,6 @@ SetFeature | IOCTL_HID_SET_FEATURE callback.
 GetInputReport | IOCTL_HID_GET_INPUT_REPORT callback.
 SetOutputReport | IOCTL_HID_SET_OUTPUT_REPORT callback.
 RetrieveNextInputReport | Callback to Client so that Read Report data can be written (IOCTL_HID_READ_REPORT).
-IoctlCallback_IOCTL_HID_SET_FEATURE | VHF callback for IOCTL_HID_SET_FEATURE.
-IoctlCallback_IOCTL_HID_GET_FEATURE | VHF callback for IOCTL_HID_GET_FEATURE.
-IoctlCallback_IOCTL_HID_GET_INPUT_REPORT | VHF callback for IOCTL_HID_GET_INPUT_REPORT.
-IoctlCallback_IOCTL_HID_READ_REPORT | VHF callback for IOCTL_HID_READ_REPORT.
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
