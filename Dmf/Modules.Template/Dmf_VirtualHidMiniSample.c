@@ -63,6 +63,7 @@ typedef struct
     HID_DEVICE_ATTRIBUTES HidDeviceAttributes;
     HID_DESCRIPTOR HidDescriptor;
     HIDMINI_INPUT_REPORT ReadReport;
+    WDFTIMER Timer;
 } DMF_CONTEXT_VirtualHidMiniSample;
 
 // This macro declares the following function:
@@ -218,6 +219,41 @@ g_VirtualHidMiniSample_DefaultHidDescriptor =
         sizeof(g_VirtualHidMiniSample_DefaultReportDescriptor)   //total length of report descriptor
     }
 };
+
+EVT_WDF_TIMER VirtualHidMiniSample_EvtTimerHandler;
+
+void
+VirtualHidMiniSample_EvtTimerHandler(
+    _In_ WDFTIMER Timer
+    )
+/*++
+Routine Description:
+
+    This periodic timer callback routine checks the device's manual queue and
+    completes any pending request with data from the device.
+
+Arguments:
+
+    Timer - Handle to a timer object that was obtained from WdfTimerCreate.
+
+Return Value:
+
+    None
+
+--*/
+{
+    NTSTATUS ntStatus;
+    DMFMODULE dmfModule;
+    DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
+
+    dmfModule = (DMFMODULE)WdfTimerGetParentObject(Timer);
+    moduleContext = DMF_CONTEXT_GET(dmfModule);
+
+    // Tell Child Module to dequeue next pending request and call this Module's 
+    // callback function to populate it.
+    //
+    ntStatus = DMF_VirtualHidMini_InputReportGenerate(moduleContext->DmfModuleVirtualHidMini);
+}
 
 NTSTATUS
 VirtualHidMiniSample_WriteReport(
@@ -610,6 +646,7 @@ Exit:
 NTSTATUS
 VirtualHidMiniSample_RetrieveNextInputReport(
     _In_ DMFMODULE DmfModule,
+    _In_ WDFREQUEST Request,
     _Out_ UCHAR** Buffer,
     _Out_ ULONG* BufferSize
     )
@@ -622,6 +659,7 @@ Routine Description:
 Arguments:
 
     DmfModule - Child Module's handle.
+    Request - Request containing input report. Client may opt to keep this request and return it later.
     Buffer - Address of buffer with input report data returned buffer to caller.
     BufferSize - Size of data in buffer returned to caller.
 
@@ -634,6 +672,8 @@ Return Value:
     DMFMODULE dmfModuleParent;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
     HIDMINI_INPUT_REPORT* readReport;
+
+    UNREFERENCED_PARAMETER(Request);
 
     dmfModuleParent = DMF_ParentModuleGet(DmfModule);
     moduleContext = DMF_CONTEXT_GET(dmfModuleParent);
@@ -703,7 +743,6 @@ Return Value:
     DMF_CONFIG_VirtualHidMiniSample* moduleConfig;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
     DMF_CONFIG_VirtualHidMini virtualHidDeviceMiniModuleConfig;
-    const ULONG timerPeriodInSeconds = 5;
 
     PAGED_CODE();
 
@@ -759,8 +798,6 @@ Return Value:
     virtualHidDeviceMiniModuleConfig.Strings = g_VirtualHidMiniSample_Strings;
     virtualHidDeviceMiniModuleConfig.NumberOfStrings = ARRAYSIZE(g_VirtualHidMiniSample_Strings);
 
-    virtualHidDeviceMiniModuleConfig.InputReportPollingIntervalMilliseconds = timerPeriodInSeconds * 1000;
-
     DMF_DmfModuleAdd(DmfModuleInit,
                      &moduleAttributes,
                      WDF_NO_OBJECT_ATTRIBUTES,
@@ -797,6 +834,9 @@ Return Value:
     NTSTATUS ntStatus;
     DMF_CONFIG_VirtualHidMiniSample* moduleConfig;
     DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
+    WDF_TIMER_CONFIG timerConfig;
+    WDF_OBJECT_ATTRIBUTES timerAttributes;
+    const ULONG timerPeriodInSeconds = 5;
 
     PAGED_CODE();
 
@@ -811,11 +851,70 @@ Return Value:
     moduleContext->ReadReport.ReportId = CONTROL_FEATURE_REPORT_ID;
     moduleContext->ReadReport.Data = moduleContext->DeviceData;
 
-    ntStatus = STATUS_SUCCESS;
+    WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig,
+                                   VirtualHidMiniSample_EvtTimerHandler,
+                                   timerPeriodInSeconds);
+
+    WDF_OBJECT_ATTRIBUTES_INIT(&timerAttributes);
+    timerAttributes.ParentObject = DmfModule;
+    ntStatus = WdfTimerCreate(&timerConfig,
+                              &timerAttributes,
+                              &moduleContext->Timer);
+    if ( !NT_SUCCESS(ntStatus) )
+    {
+        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "WdfTimerCreate fails: ntStatus=%!STATUS!", ntStatus);
+        goto Exit;
+    }
+
+    // Start immediately.
+    //
+    WdfTimerStart(moduleContext->Timer,
+                  WDF_REL_TIMEOUT_IN_MS(0));
+
+Exit:
 
     FuncExit(DMF_TRACE, "ntStatus=%!STATUS!", ntStatus);
 
     return ntStatus;
+}
+#pragma code_seg()
+
+#pragma code_seg("PAGE")
+_IRQL_requires_max_(PASSIVE_LEVEL)
+_Must_inspect_result_
+static
+VOID
+DMF_VirtualHidMiniSample_Close(
+    _In_ DMFMODULE DmfModule
+    )
+/*++
+
+Routine Description:
+
+    Uninitialize an instance of a DMF Module of type VirtualHidMiniSample.
+
+Arguments:
+
+    DmfModule - The given DMF Module.
+
+Return Value:
+
+    None
+
+--*/
+{
+    DMF_CONTEXT_VirtualHidMiniSample* moduleContext;
+
+    PAGED_CODE();
+
+    FuncEntry(DMF_TRACE);
+
+    moduleContext = DMF_CONTEXT_GET(DmfModule);
+
+    WdfTimerStop(moduleContext->Timer,
+                 TRUE);
+
+    FuncExitVoid(DMF_TRACE);
 }
 #pragma code_seg()
 
@@ -864,6 +963,7 @@ Return Value:
     DMF_CALLBACKS_DMF_INIT(&dmfCallbacksDmf_VirtualHidMiniSample);
     dmfCallbacksDmf_VirtualHidMiniSample.ChildModulesAdd = DMF_VirtualHidMiniSample_ChildModulesAdd;
     dmfCallbacksDmf_VirtualHidMiniSample.DeviceOpen = DMF_VirtualHidMiniSample_Open;
+    dmfCallbacksDmf_VirtualHidMiniSample.DeviceClose = DMF_VirtualHidMiniSample_Close;
 
     DMF_MODULE_DESCRIPTOR_INIT_CONTEXT_TYPE(dmfModuleDescriptor_VirtualHidMiniSample,
                                             VirtualHidMiniSample,

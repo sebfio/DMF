@@ -106,38 +106,39 @@ typedef UCHAR VirtualHidMini_HID_REPORT_DESCRIPTOR;
 typedef 
 NTSTATUS
 EVT_VirtualHidMini_WriteReport(_In_ DMFMODULE,
-                                     _In_ HID_XFER_PACKET* Packet,
-                                     _Out_ ULONG* ReportSize);
+                               _In_ HID_XFER_PACKET* Packet,
+                               _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
 EVT_VirtualHidMini_GetFeature(_In_ DMFMODULE,
-                                    _In_ HID_XFER_PACKET* Packet,
-                                    _Out_ ULONG* ReportSize);
+                              _In_ HID_XFER_PACKET* Packet,
+                              _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
 EVT_VirtualHidMini_SetFeature(_In_ DMFMODULE,
-                                    _In_ HID_XFER_PACKET* Packet,
-                                    _Out_ ULONG* ReportSize);
+                              _In_ HID_XFER_PACKET* Packet,
+                              _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
 EVT_VirtualHidMini_GetInputReport(_In_ DMFMODULE,
-                                        _In_ HID_XFER_PACKET* Packet,
-                                        _Out_ ULONG* ReportSize);
+                                  _In_ HID_XFER_PACKET* Packet,
+                                  _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
 EVT_VirtualHidMini_SetOutputReport(_In_ DMFMODULE,
-                                         _In_ HID_XFER_PACKET* Packet,
-                                         _Out_ ULONG* ReportSize);
+                                   _In_ HID_XFER_PACKET* Packet,
+                                   _Out_ ULONG* ReportSize);
 
 typedef 
 NTSTATUS
 EVT_VirtualHidMini_RetrieveNextInputReport(_In_ DMFMODULE,
-                                                 _Out_ UCHAR** Buffer,
-                                                 _Out_ ULONG* BufferSize);
+                                           _In_ WDFREQUEST Request,
+                                           _Out_ UCHAR** Buffer,
+                                           _Out_ ULONG* BufferSize);
 
 // Client uses this structure to configure the Module specific parameters.
 //
@@ -169,10 +170,6 @@ typedef struct
     PWSTR* Strings;
     ULONG NumberOfStrings;
 
-    // Indicates how often Module should check for Input Reports.
-    //
-    LONG InputReportPollingIntervalMilliseconds;
-
     // Client callback handlers.
     //
     EVT_VirtualHidMini_WriteReport* WriteReport;
@@ -192,6 +189,11 @@ DECLARE_DMF_MODULE(VirtualHidMini)
 
 // Module Methods
 //
+
+NTSTATUS
+DMF_VirtualHidMini_InputReportGenerate(
+    _In_ DMFMODULE DmfModule
+    );
 
 // eof: Dmf_VirtualHidMini.h
 //

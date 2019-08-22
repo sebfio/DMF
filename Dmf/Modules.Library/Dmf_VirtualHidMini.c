@@ -69,7 +69,6 @@ typedef struct _MANUAL_QUEUE_CONTEXT
 {
     WDFQUEUE Queue;
     DMFMODULE DmfModule;
-    WDFTIMER Timer;
 } MANUAL_QUEUE_CONTEXT;
 WDF_DECLARE_CONTEXT_TYPE_WITH_NAME(MANUAL_QUEUE_CONTEXT, ManualQueueContextGet);
 
@@ -373,61 +372,6 @@ Exit:
     return ntStatus;
 }
 
-EVT_WDF_TIMER VirtualHidMini_EvtTimerHandler;
-
-void
-VirtualHidMini_EvtTimerHandler(
-    _In_ WDFTIMER Timer
-    )
-/*++
-Routine Description:
-
-    This periodic timer callback routine checks the device's manual queue and
-    completes any pending request with data from the device.
-
-Arguments:
-
-    Timer - Handle to a timer object that was obtained from WdfTimerCreate.
-
-Return Value:
-
-    None
-
---*/
-{
-    NTSTATUS ntStatus;
-    WDFREQUEST request;
-    DMFMODULE dmfModule;
-    DMF_CONTEXT_VirtualHidMini* moduleContext;
-    DMF_CONFIG_VirtualHidMini* moduleConfig;
-    UCHAR* readReport;
-    ULONG readReportSize;
-
-    dmfModule = (DMFMODULE)WdfTimerGetParentObject(Timer);
-    moduleContext = DMF_CONTEXT_GET(dmfModule);
-    moduleConfig = DMF_CONFIG_GET(dmfModule);
-
-    // See if we have a request in manual queue.
-    //
-    ntStatus = WdfIoQueueRetrieveNextRequest(moduleContext->ManualQueue,
-                                             &request);
-    if (NT_SUCCESS(ntStatus))
-    {
-        ntStatus = moduleConfig->RetrieveNextInputReport(dmfModule,
-                                                         &readReport,
-                                                         &readReportSize);
-        if (NT_SUCCESS(ntStatus))
-        {
-            ntStatus = VirtualHidMini_RequestCopyFromBuffer(request,
-                                                            readReport,
-                                                            readReportSize);
-        }
-
-        WdfRequestComplete(request,
-                           ntStatus);
-    }
-}
-
 NTSTATUS
 VirtualHidMini_ManualQueueCreate(
     _In_ DMFMODULE DmfModule,
@@ -477,8 +421,6 @@ Return Value:
     WDF_OBJECT_ATTRIBUTES queueAttributes;
     WDFQUEUE queue;
     MANUAL_QUEUE_CONTEXT* queueContext;
-    WDF_TIMER_CONFIG timerConfig;
-    WDF_OBJECT_ATTRIBUTES timerAttributes;
     WDFDEVICE device;
     DMF_CONFIG_VirtualHidMini* moduleConfig;
 
@@ -505,26 +447,6 @@ Return Value:
     queueContext->Queue = queue;
     queueContext->DmfModule = DmfModule;
 
-    WDF_TIMER_CONFIG_INIT_PERIODIC(&timerConfig,
-                                   VirtualHidMini_EvtTimerHandler,
-                                   moduleConfig->InputReportPollingIntervalMilliseconds);
-
-    WDF_OBJECT_ATTRIBUTES_INIT(&timerAttributes);
-    timerAttributes.ParentObject = DmfModule;
-    ntStatus = WdfTimerCreate(&timerConfig,
-                              &timerAttributes,
-                              &queueContext->Timer);
-    if ( !NT_SUCCESS(ntStatus) )
-    {
-        TraceEvents(TRACE_LEVEL_ERROR, DMF_TRACE, "WdfTimerCreate fails: ntStatus=%!STATUS!", ntStatus);
-        goto Exit;
-    }
-
-    // Start immediately.
-    //
-    WdfTimerStart(queueContext->Timer,
-                  WDF_REL_TIMEOUT_IN_MS(0));
-
     *Queue = queue;
 
 Exit:
@@ -533,7 +455,7 @@ Exit:
 }
 
 NTSTATUS
-VirtualHidMinit_ReadReport(
+VirtualHidMini_ReadReport(
     _In_ DMFMODULE DmfModule,
     _In_  WDFREQUEST Request,
     _Always_(_Out_) BOOLEAN* CompleteRequest
@@ -1221,9 +1143,9 @@ Return Value:
             // Returns a report from the device into a class driver-supplied
             // buffer.
             //
-            ntStatus = VirtualHidMinit_ReadReport(DmfModule,
-                                                  Request,
-                                                  &completeRequest);
+            ntStatus = VirtualHidMini_ReadReport(DmfModule,
+                                                 Request,
+                                                 &completeRequest);
             break;
 
         case IOCTL_HID_WRITE_REPORT:            // METHOD_NEITHER
@@ -1545,6 +1467,82 @@ Exit:
 
 // Module Methods
 //
+
+NTSTATUS
+DMF_VirtualHidMini_InputReportGenerate(
+    _In_ DMFMODULE DmfModule
+    )
+/*++
+
+Routine Description:
+
+    Tries to retrieve the next pending input report from the manual queue. If it exists,
+    extract the buffer and send the buffer and request to Client. Client then has a chance
+    to populate the buffer.
+
+Arguments:
+
+    DmfModule - This Module's handle.
+
+Return Value:
+
+    Indicates whether or not a request was pending in the queue.
+
+--*/
+{
+    NTSTATUS ntStatus;
+    NTSTATUS ntStatusRequest;
+    WDFREQUEST request;
+    DMF_CONTEXT_VirtualHidMini* moduleContext;
+    DMF_CONFIG_VirtualHidMini* moduleConfig;
+    UCHAR* readReport;
+    ULONG readReportSize;
+
+    FuncEntry(DMF_TRACE);
+
+    DMFMODULE_VALIDATE_IN_METHOD(DmfModule,
+                                 VirtualHidMini);
+
+    moduleContext = DMF_CONTEXT_GET(DmfModule);
+    moduleConfig = DMF_CONFIG_GET(DmfModule);
+
+    // See if we have a request in manual queue.
+    //
+    ntStatus = WdfIoQueueRetrieveNextRequest(moduleContext->ManualQueue,
+                                             &request);
+    if (NT_SUCCESS(ntStatus))
+    {
+        // Call Client.
+        //
+        ntStatusRequest = STATUS_UNSUCCESSFUL;
+        ntStatus = moduleConfig->RetrieveNextInputReport(DmfModule,
+                                                         request,
+                                                         &readReport,
+                                                         &readReportSize);
+        if (NT_SUCCESS(ntStatus))
+        {
+            ntStatusRequest = VirtualHidMini_RequestCopyFromBuffer(request,
+                                                                   readReport,
+                                                                   readReportSize);
+        }
+
+        if (ntStatus != STATUS_PENDING)
+        {
+            WdfRequestComplete(request,
+                               ntStatusRequest);
+        }
+        else
+        {
+            // Client is responsible for completing the request.
+            //
+        }
+    }
+
+    FuncExit(DMF_TRACE, "ntStatus=%!STATUS!", ntStatus);
+
+    return ntStatus;
+}
+
 
 // eof: Dmf_VirtualHidMini.c
 //
