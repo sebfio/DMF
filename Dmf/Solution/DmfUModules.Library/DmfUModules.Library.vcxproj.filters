@@ -296,5 +296,8 @@
     <None Include="..\..\Modules.Library\Dmf_VirtualHidMini.md">
       <Filter>Documentation\Modules\Hid</Filter>
     </None>
+    <None Include="..\..\Modules.Library\Dmf_I2cTarget.md">
+      <Filter>Documentation\Modules\Driver Patterns</Filter>
+    </None>
   </ItemGroup>
 </Project>
