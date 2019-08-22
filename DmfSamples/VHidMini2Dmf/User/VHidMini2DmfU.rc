@@ -10,7 +10,7 @@
 
 #define VER_FILETYPE                VFT_DLL
 #define VER_FILESUBTYPE             VFT_UNKNOWN
-#define VER_FILEDESCRIPTION_STR     "HID minidriver (UMDF 2 version)"
-#define VER_INTERNALNAME_STR        "VhidminiUm.dll"
+#define VER_FILEDESCRIPTION_STR     "DMF HID Minidriver (VHIDMINI2) Sample (User-mode)"
+#define VER_INTERNALNAME_STR        "VHidMini2DmfU.dll"
 
 #include "common.ver"

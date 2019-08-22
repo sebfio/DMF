@@ -13,11 +13,11 @@ Module Name:
 
 Abstract:
 
-    VHidMini2Dmf4 Sample: DMF version of VHIDMINI2 Sample (Kernel-mode).
+    VHidMini2DmfK Sample: DMF version of VHIDMINI2 Sample (Kernel-mode).
 
 Environment:
 
-    Kernel mode only
+    Kernel mode
 
 --*/
 

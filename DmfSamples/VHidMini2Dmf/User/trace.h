@@ -21,21 +21,21 @@ Environment:
 // Define the tracing flags.
 // Tracing GUIDs:
 //
-// Client Driver - {9DE29693-B70E-4028-BA97-42DA7224522E}
+// Client Driver - {93D98F10-5DB5-4CB3-A57A-81CB4D73A81D}
 //
 // NOTE: Every driver must define a unique GUID otherwise tracing from multiple drivers
 //       that use the same GUID will appear.
 //
-// DMF           - {94A46978-C450-45B9-8790-5070DA9002F7}
+// DMF           - {E3F037DA-C707-4501-A08B-2F0887871477}
 //
 
 #define WPP_CONTROL_GUIDS                                                               \
    WPP_DEFINE_CONTROL_GUID(                                                             \
-        DmfTraceGuid, (94A46978,C450,45B9,8790,5070DA9002F7),                           \
+        DmfTraceGuid, (E3F037DA,C707,4501,A08B,2F0887871477),                           \
         WPP_DEFINE_BIT(DMF_TRACE)                                                       \
         )                                                                               \
     WPP_DEFINE_CONTROL_GUID(                                                            \
-        SwitchBarTraceGuid, (9DE29693,B70E,4028,BA97,42DA7224522E),                     \
+        VHidMini2DmfU, (93D98F10,5DB5,4CB3,A57A,81CB4D73A81D),                          \
         WPP_DEFINE_BIT(MYDRIVER_ALL_INFO)                                               \
         WPP_DEFINE_BIT(TRACE_DEVICE)                                                    \
         WPP_DEFINE_BIT(TRACE_CALLBACK)                                                  \
