@@ -58,6 +58,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NonPnp1Exe", "NonPnp1\exe\NonPnp1Exe.vcxproj", "{43F430EA-B1A7-4A80-B390-121C1C5A99C4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VHidMini2Dmf", "VHidMini2Dmf", "{5EDDC6E8-C1AE-44B8-845E-8FD98088C690}"
+	ProjectSection(SolutionItems) = preProject
+		VHidMini2Dmf\README.md = VHidMini2Dmf\README.md
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VHidMini2DmfK", "VHidMini2Dmf\Kernel\VHidMini2DmfK.vcxproj", "{FBBF1FFF-60D0-4223-BC88-5CC306383214}"
 EndProject

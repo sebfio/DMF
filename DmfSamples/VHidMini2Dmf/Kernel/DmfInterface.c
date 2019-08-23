@@ -95,7 +95,7 @@ VHidMini2DmfEvtDeviceAdd(
     WdfDeviceInitSetExclusive(DeviceInit,
                               FALSE);
 
-    // This is a filter driver that loads on OSRUSBFX2 driver.
+    // This is a filter driver that loads on MSHIDKMDF driver.
     //
     WdfFdoInitSetFilter(DeviceInit);
     // DMF Client drivers that are filter drivers must also make this call.

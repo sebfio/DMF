@@ -29,9 +29,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="VHidMini2DmfU.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
