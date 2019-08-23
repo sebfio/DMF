@@ -6,7 +6,8 @@
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
-This Module serves as an example of a virutal HID device that uses DMF_VirtualHidMini as a "base class".
+This Module serves as an example of a virtual HID device that uses DMF_VirtualHidMini as a "base class". See the MSDN sample, VHIDMINI2
+for more information.
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
