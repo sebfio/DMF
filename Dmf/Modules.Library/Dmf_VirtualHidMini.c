@@ -1457,6 +1457,60 @@ Exit:
 // Module Methods
 //
 
+VOID
+DMF_VirtualHidMini_InputReportComplete(
+    _In_ DMFMODULE DmfModule,
+    _In_ WDFREQUEST Request,
+    _In_ UCHAR* ReadReport,
+    _In_ ULONG ReadReportSize,
+    _In_ NTSTATUS NtStatus
+    )
+/*++
+
+Routine Description:
+
+    Completes a given WDFREQUEST that the caller held pending from a call DMF_VirtualHidMini_InputReportGenerate()
+    using a given NTSTATUS as well as data.
+
+    NOTE: Only use this Method if the call to DMF_VirtualHidMini_InputReportGenerate() returned STATUS_PENDING.
+
+Arguments:
+
+    DmfModule - This Module's handle.
+    Request - The given Request.
+    ReadReport - The buffer to return.
+    ReadReportSize - The size of the buffer to return.
+    NtStatus - The given NTSTATUS.
+
+Return Value:
+
+    None
+
+--*/
+{
+    FuncEntry(DMF_TRACE);
+
+    DMFMODULE_VALIDATE_IN_METHOD(DmfModule,
+                                 VirtualHidMini);
+
+    if (NT_SUCCESS(NtStatus))
+    {
+        NtStatus = VirtualHidMini_RequestCopyFromBuffer(Request,
+                                                        ReadReport,
+                                                        ReadReportSize);
+        ASSERT(NT_SUCCESS(NtStatus));
+        WdfRequestComplete(Request,
+                           NtStatus);
+    }
+    else
+    {
+        WdfRequestComplete(Request,
+                           NtStatus);
+    }
+
+    FuncExitVoid(DMF_TRACE);
+}
+
 NTSTATUS
 DMF_VirtualHidMini_InputReportGenerate(
     _In_ DMFMODULE DmfModule
@@ -1480,7 +1534,6 @@ Return Value:
 --*/
 {
     NTSTATUS ntStatus;
-    NTSTATUS ntStatusRequest;
     WDFREQUEST request;
     DMF_CONTEXT_VirtualHidMini* moduleContext;
     DMF_CONFIG_VirtualHidMini* moduleConfig;
@@ -1503,27 +1556,27 @@ Return Value:
     {
         // Call Client.
         //
-        ntStatusRequest = STATUS_UNSUCCESSFUL;
         ntStatus = moduleConfig->RetrieveNextInputReport(DmfModule,
                                                          request,
                                                          &readReport,
                                                          &readReportSize);
-        if (NT_SUCCESS(ntStatus))
-        {
-            ntStatusRequest = VirtualHidMini_RequestCopyFromBuffer(request,
-                                                                   readReport,
-                                                                   readReportSize);
-        }
-
-        if (ntStatus != STATUS_PENDING)
-        {
-            WdfRequestComplete(request,
-                               ntStatusRequest);
-        }
-        else
+        if (STATUS_PENDING == ntStatus)
         {
             // Client is responsible for completing the request.
             //
+        }
+        else if (NT_SUCCESS(ntStatus))
+        {
+            ntStatus = VirtualHidMini_RequestCopyFromBuffer(request,
+                                                            readReport,
+                                                            readReportSize);
+            WdfRequestComplete(request,
+                               ntStatus);
+        }
+        else
+        {
+            WdfRequestComplete(request,
+                               ntStatus);
         }
     }
 
@@ -1531,7 +1584,6 @@ Return Value:
 
     return ntStatus;
 }
-
 
 // eof: Dmf_VirtualHidMini.c
 //

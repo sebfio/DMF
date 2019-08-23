@@ -102,6 +102,37 @@ RetrieveNextInputReport | Callback to Client so that Read Report data can be wri
 
 -----------------------------------------------------------------------------------------------------------------------------------
 
+##### DMF_VirtualHidMini_InputReportComplete
+
+````
+VOID
+DMF_VirtualHidMini_InputReportComplete(
+    _In_ DMFMODULE DmfModule,
+    _In_ WDFREQUEST Request,
+    _In_ UCHAR* ReadReport,
+    _In_ ULONG ReadReportSize,
+    _In_ NTSTATUS NtStatus
+    );
+````
+
+Completes a given WDFREQUEST that the caller held pending from a call DMF_VirtualHidMini_InputReportGenerate()
+using a given NTSTATUS as well as data. NOTE: Only use this Method if the call to DMF_VirtualHidMini_InputReportGenerate() returned STATUS_PENDING.
+
+##### Returns
+
+None
+
+##### Parameters
+Parameter | Description
+----|----
+DmfModule | An open DMF_VirtualHidMini Module handle.
+Request | The Request for which STATUS_PENDING was previously returned.
+ReadReport | The data buffer to return in the Request.
+ReadReportSize | The size of the data buffer to return in the Request.
+NtStatus | The NTSTATUS to return in the Request.
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
 ##### DMF_VirtualHidMini_InputReportGenerate
 
 ````

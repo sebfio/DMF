@@ -197,6 +197,15 @@ DECLARE_DMF_MODULE(VirtualHidMini)
 // Module Methods
 //
 
+VOID
+DMF_VirtualHidMini_InputReportComplete(
+    _In_ DMFMODULE DmfModule,
+    _In_ WDFREQUEST Request,
+    _In_ UCHAR* ReadReport,
+    _In_ ULONG ReadReportSize,
+    _In_ NTSTATUS NtStatus
+    );
+
 NTSTATUS
 DMF_VirtualHidMini_InputReportGenerate(
     _In_ DMFMODULE DmfModule
