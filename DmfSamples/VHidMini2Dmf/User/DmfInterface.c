@@ -89,7 +89,7 @@ VHidMini2DmfEvtDeviceAdd(
     DMF_DmfDeviceInitHookPowerPolicyEventCallbacks(dmfDeviceInit,
                                                    NULL);
 
-    // This is a filter driver that loads on MSHIDKMDF driver.
+    // This is a filter driver that loads on MSHIDUMDF driver.
     //
     WdfFdoInitSetFilter(DeviceInit);
     // DMF Client drivers that are filter drivers must also make this call.
